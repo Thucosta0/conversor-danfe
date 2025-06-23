@@ -174,12 +174,12 @@ cython_debug/
 *.tmp
 *.temp
 
-# Composer
-vendor/
-composer.lock
+# Composer - INCLUIR vendor para projeto corporativo
+# vendor/  # Comentado para incluir no repositório
+# composer.lock  # Incluir para reprodutibilidade
 
-# PHP executables (já que temos o PHP portable)
-php-8.4.8-nts-Win32-vs17-x64/
+# PHP executables - INCLUIR PHP portable para projeto standalone
+# php-8.4.8-nts-Win32-vs17-x64/  # Comentado para incluir runtime PHP
 
 # Arquivos de build
 BUILD_EXE.bat

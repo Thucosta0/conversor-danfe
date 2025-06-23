@@ -1,256 +1,141 @@
-# ⚕️ renamerPRO© - Sistema de Processamento DANFE
+# 🏥 renamerPRO© - Hospital Israelita Albert Einstein
 
-Sistema profissional para processamento em massa de documentos fiscais (DANFEs) desenvolvido para o Hospital Israelita Albert Einstein.
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![License](https://img.shields.io/badge/license-Proprietary-red.svg)
+![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)
+![Status](https://img.shields.io/badge/status-Production-green.svg)
 
-![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
-![CustomTkinter](https://img.shields.io/badge/CustomTkinter-5.0+-green.svg)
-![PHP](https://img.shields.io/badge/PHP-8.4+-purple.svg)
-![Status](https://img.shields.io/badge/Status-Ativo-success.svg)
+**Sistema Profissional de Processamento e Conversão de Documentos Fiscais Eletrônicos (DANFEs)**
 
-## 🏥 Sobre o Projeto
-
-O **renamerPRO©** é uma solução completa para automatização do processamento de documentos fiscais eletrônicos, desenvolvido especificamente para ambientes hospitalares com foco na eficiência e usabilidade profissional.
-
-### ✨ Principais Funcionalidades
-
-- 🚀 **Processamento em Massa**: Converte múltiplos XMLs para PDF simultaneamente
-- 📋 **Renomeação Inteligente**: Sistema avançado de mapeamento por chave de acesso
-- ⚡ **Processamento Paralelo**: Até 5 documentos processados simultaneamente
-- 🎨 **Interface Moderna**: Design profissional com tema Hospital Einstein
-- 📊 **Monitoramento em Tempo Real**: Logs detalhados e barras de progresso
-- 🔍 **Validação Automática**: Verificação de chaves NFe e integridade dos arquivos
-
-## 🛠️ Tecnologias Utilizadas
-
-- **Python 3.8+** - Linguagem principal
-- **CustomTkinter 5.0+** - Interface gráfica moderna
-- **PHP 8.4** - Engine de processamento DANFE
-- **Composer** - Gerenciamento de dependências PHP
-- **Threading** - Processamento paralelo
-- **XML/ElementTree** - Manipulação de documentos fiscais
-
-## 📦 Dependências PHP
-
-- `nfephp-org/sped-nfe` - Biblioteca para processamento NFe
-- `nfephp-org/sped-da` - Geração de documentos auxiliares
-- `tecnickcom/tc-lib-barcode` - Geração de códigos de barras
-
-## 🚀 Instalação
-
-### 1. Clone o Repositório
-```bash
-git clone https://github.com/seu-usuario/renamerPRO.git
-cd renamerPRO
-```
-
-### 2. Instalar Dependências Python
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Configurar PHP (Incluído)
-O projeto já inclui o PHP 8.4 portável com todas as dependências configuradas.
-
-### 4. Instalar Bibliotecas PHP
-```bash
-php composer.phar install
-```
-
-## 🖥️ Como Usar
-
-### Processamento em Massa
-
-1. **Abra o renamerPRO©**
-   ```bash
-   python danfe_app.py
-   ```
-
-2. **Configure as Pastas**
-   - Selecione a pasta contendo os arquivos XML
-   - Opcionalmente, escolha uma pasta de destino para os PDFs
-
-3. **Execute o Processamento**
-   - Clique em "ESCANEAR PASTA" para verificar os arquivos
-   - Clique em "PROCESSAR DOCUMENTOS" para iniciar a conversão
-
-### Renomeação Inteligente
-
-1. **Acesse a Aba "📋 Renomeação Inteligente"**
-
-2. **Configure o Diretório**
-   - Selecione a pasta com os XMLs
-   - Clique em "ESCANEAR CHAVES" para mapear os arquivos
-
-3. **Configurar Mapeamento**
-   - Use "NOVA LINHA" para adicionar mapeamentos individuais
-   - Use "LOTE DE DADOS" para importação em massa
-   - Configure chave de acesso → nome desejado
-
-4. **Execute as Operações**
-   - "VALIDAR E RENOMEAR" - Renomeia os arquivos
-   - "PROCESSAR TODOS" - Gera PDFs de todos os XMLs
-
-## 📊 Funcionalidades Avançadas
-
-### 🔄 Processamento Paralelo
-- Utiliza ThreadPoolExecutor para máxima eficiência
-- Processa até 5 documentos simultaneamente
-- Otimizado para grandes volumes de arquivos
-
-### 📋 Sistema de Logs
-- Logs em tempo real com timestamps
-- Códigos de status coloridos
-- Relatórios detalhados de sucesso/erro
-
-### 🎯 Validação Inteligente
-- Validação automática de chaves NFe (44 dígitos)
-- Verificação de integridade dos arquivos XML
-- Detecção de arquivos duplicados
-
-### 📊 Interface Responsiva
-- Design adaptativo para diferentes resoluções
-- Tema profissional Hospital Einstein
-- Componentes modernos com CustomTkinter
-
-## 🔧 Configuração Avançada
-
-### Personalização de Cores
-```python
-# Edite as cores no arquivo danfe_app.py
-self.cores = {
-    'azul_primary': '#003D7A',      # Azul Einstein principal
-    'azul_secondary': '#0056B3',    # Azul secundário
-    'verde_success': '#2E7D32',     # Verde sucesso
-    # ... outras cores
-}
-```
-
-### Ajuste de Performance
-```python
-# Número de threads paralelas (danfe_app.py)
-ThreadPoolExecutor(max_workers=5)  # Ajuste conforme necessário
-```
-
-## 📁 Estrutura do Projeto
-
-```
-renamerPRO/
-├── danfe_app.py              # Aplicação principal
-├── gerador_danfe.php         # Engine PHP para DANFE
-├── live_preview.py           # Sistema de monitoramento
-├── requirements.txt          # Dependências Python
-├── composer.json            # Dependências PHP
-├── composer.lock           # Lock de versões PHP
-├── README.md              # Documentação
-├── .gitignore            # Arquivos ignorados
-├── php-8.4.8-nts-Win32-vs17-x64/  # PHP portável
-└── vendor/                        # Bibliotecas PHP
-```
-
-## 🎨 Interface
-
-### Tela Principal - Processamento em Massa
-- ⚙️ **Configuração**: Seleção de pastas
-- 📊 **Controle**: Botões de escaneamento e processamento  
-- 📈 **Progresso**: Barras de progresso em tempo real
-- 📋 **Logs**: Acompanhamento detalhado das operações
-
-### Tela de Renomeação Inteligente
-- 🔍 **Escaneamento**: Mapeamento automático de chaves
-- 📊 **Tabela**: Interface para configuração de mapeamentos
-- 🛠️ **Controles**: Botões para operações em lote
-- 📋 **Logs**: Feedback detalhado das operações
-
-## 🚨 Troubleshooting
-
-### Problemas Comuns
-
-**1. Erro: "PHP não encontrado"**
-```bash
-# Verifique se o PHP está no diretório correto
-ls php-8.4.8-nts-Win32-vs17-x64/php.exe
-```
-
-**2. Erro: "Bibliotecas PHP não instaladas"**
-```bash
-# Reinstale as dependências
-php composer.phar install --no-dev
-```
-
-**3. Interface não carrega**
-```bash
-# Verifique a instalação do CustomTkinter
-pip install --upgrade customtkinter
-```
-
-**4. XMLs não são reconhecidos**
-- Verifique se os arquivos têm extensão `.xml`
-- Confirme se são XMLs válidos de NFe
-- Verifique permissões de leitura da pasta
-
-## 📈 Performance
-
-### Benchmarks Típicos
-- **Volume**: 1000+ XMLs processados simultaneamente
-- **Velocidade**: ~2-3 segundos por DANFE
-- **Memória**: ~50-100MB durante processamento
-- **CPU**: Otimizado para múltiplos cores
-
-### Recomendações de Hardware
-- **RAM**: Mínimo 4GB, recomendado 8GB+
-- **CPU**: Múltiplos cores para melhor paralelização
-- **Armazenamento**: SSD recomendado para I/O intensivo
-
-## 🔐 Segurança
-
-- ✅ Validação rigorosa de arquivos de entrada
-- ✅ Processamento local (sem envio de dados externos)
-- ✅ Logs detalhados para auditoria
-- ✅ Backup automático recomendado
-
-## 🤝 Contribuição
-
-1. Fork o projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/nova-funcionalidade`)
-3. Commit suas mudanças (`git commit -am 'Adiciona nova funcionalidade'`)
-4. Push para a branch (`git push origin feature/nova-funcionalidade`)
-5. Abra um Pull Request
-
-## 📋 Roadmap
-
-- [ ] 🔴 Sistema Live Preview (monitoramento em tempo real)
-- [ ] 📊 Dashboard analytics
-- [ ] 🔒 Sistema de usuários e permissões
-- [ ] 📱 Interface responsiva mobile
-- [ ] 🌐 API REST para integração
-- [ ] 📧 Notificações por email
-- [ ] 📊 Relatórios em Excel/PDF
-
-## 📞 Suporte
-
-Para suporte técnico ou dúvidas:
-
-- 📧 **Email**: suporte-ti@einstein.br
-- 📱 **Teams**: Canal renamerPRO
-- 🎫 **Tickets**: Sistema interno de TI
-
-## 📄 Licença
-
-Este projeto é proprietário do Hospital Israelita Albert Einstein.
-Todos os direitos reservados © 2024
-
-## 🏥 Créditos
-
-**Desenvolvido por**: Departamento de TI - Hospital Israelita Albert Einstein
-**Versão**: 2.0.0
-**Data**: 2024
+Desenvolvido exclusivamente para o **Hospital Israelita Albert Einstein**, este sistema oferece processamento em massa, renomeação inteligente e conversão automática de arquivos XML para documentos DANFE em formato PDF, otimizando o fluxo de trabalho.
 
 ---
 
-<div align="center">
+## 📋 **Índice**
 
-**⚕️ Hospital Israelita Albert Einstein**
+- [Visão Geral](#-visão-geral)
+- [Características Principais](#-características-principais)
+- [Requisitos do Sistema](#-requisitos-do-sistema)
+- [Instalação](#-instalação)
+- [Guia de Uso](#-guia-de-uso)
+- [Arquitetura Técnica](#-arquitetura-técnica)
+- [Build e Distribuição](#-build-e-distribuição)
+- [Suporte e Manutenção](#-suporte-e-manutenção)
+- [Licença e Copyright](#-licença-e-copyright)
 
-*"Excelência em Tecnologia da Informação Hospitalar"*
+---
 
-</div> 
+## 🎯 **Visão Geral**
+
+O **renamerPRO©** é uma solução corporativa desenvolvida para atender às necessidades específicas do Hospital Israelita Albert Einstein no processamento de documentos fiscais eletrônicos. O sistema automatiza a conversão de arquivos XML em documentos DANFE padronizados, garantindo conformidade com as normas da Receita Federal e otimização dos processos internos.
+
+### **Objetivos Estratégicos**
+- Automatizar o processamento de documentos fiscais
+- Reduzir tempo de processamento manual em até 95%
+- Garantir conformidade regulatória
+
+---
+
+## ✨ **Características Principais**
+
+### **🚀 Processamento em Massa**
+- Conversão simultânea de milhares de arquivos XML
+- Processamento paralelo multithread para máxima performance
+- Validação automática de integridade dos documentos
+- Relatórios detalhados de processamento
+
+### **🎯 Renomeação Inteligente**
+- Sistema de renomeação baseado em chaves NFe
+- Validação automática de chaves fiscais
+- Prevenção de duplicatas e conflitos
+- Nomenclatura padronizada para integração
+
+### **🏥 Interface Profissional**
+- Design otimizado para ambiente hospitalar
+- Paleta de cores Albert Einstein
+- Interface intuitiva e responsiva
+- Feedback visual em tempo real
+
+### **⚡ Alta Performance**
+- Processamento paralelo otimizado
+- Gestão inteligente de memória
+- Logs detalhados para auditoria
+- Recuperação automática de erros
+
+---
+
+## 📚 **Guia de Uso**
+
+### **1. Processamento em Massa**
+1. **Configuração**: Selecione pasta origem (XMLs) e destino (PDFs)
+2. **Escaneamento**: Sistema identifica automaticamente arquivos válidos
+3. **Processamento**: Execute conversão em lote com acompanhamento em tempo real
+4. **Relatório**: Receba relatório detalhado com estatísticas completas
+
+### **2. Renomeação Inteligente**
+1. **Seleção**: Escolha pasta com arquivos XML
+2. **Configuração**: Defina padrões de renomeação personalizados
+3. **Validação**: Sistema verifica chaves NFe automaticamente
+4. **Execução**: Aplique renomeação com backup automático
+
+### **3. Processamento por Lote**
+1. **Entrada de Dados**: Insira múltiplas chaves NFe simultaneamente
+2. **Validação**: Sistema verifica formato e validade
+3. **Processamento**: Conversão automática para DANFE
+4. **Exportação**: Documentos prontos para arquivo
+
+---
+
+## 🏗️ **Arquitetura Técnica**
+
+### **Componentes Principais**
+- **Frontend**: CustomTkinter (Interface Gráfica)
+- **Backend**: Python 3.8+ (Lógica de Negócio)
+- **Processamento**: PHP 8.4.8 + NFePHP (Geração DANFE)
+- **Dados**: XML/PDF (Entrada/Saída)
+
+### **Fluxo de Processamento**
+1. **Entrada**: Validação e sanitização de arquivos XML
+2. **Processamento**: Conversão paralela via PHP/NFePHP
+3. **Validação**: Verificação de integridade dos PDFs gerados
+4. **Saída**: Documentos DANFE padronizados e relatórios
+
+### **Otimizações Implementadas**
+- Pool de threads otimizado para CPU
+- Gestão eficiente de memória
+- Cache inteligente de operações
+- Logs estruturados para debugging
+
+---
+
+### **Suporte Técnico**
+Para suporte técnico especializado, entre em contato com a equipe de desenvolvimento. (thucosta)
+
+---
+
+## ⚖️ **Licença e Copyright**
+
+### **Copyright e Propriedade Intelectual**
+
+**© 2025 ThTweaks - Todos os direitos reservados**  
+**Desenvolvido por: Thucosta**
+
+Este software é propriedade exclusiva da **ThTweaks**, podendo ser compatilhado a fins de uso institucional.
+
+### **Garantia e Responsabilidade**
+Este software é fornecido "como está", sem garantias expressas ou implícitas. A ThTweaks não se responsabiliza por danos decorrentes do uso deste software.
+
+---
+
+## 📞 **Contato**
+
+**ThTweaks - Soluções Tecnológicas Corporativas**
+- **Desenvolvedor**: Thucosta
+- **Projeto**: renamerPRO© Hospital Einstein
+- **Status**: Produção Ativa
+
+---
+
+*Este documento é propriedade intelectual da ThTweaks e contém informações confidenciais.*
+
+**Última atualização**: 2025 | **Versão do documento**: 1.0.0 

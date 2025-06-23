@@ -3,7 +3,6 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 import subprocess
 import os
-import sys
 import threading
 import webbrowser
 import time
@@ -56,14 +55,7 @@ class DanfeAppMassa:
         self.processando = False
         self.chaves_xml = {}
         self.linhas_renomeacao = []
-        
-        # Detectar se está executando como executável empacotado
-        if getattr(sys, 'frozen', False):
-            base_path = sys._MEIPASS
-        else:
-            base_path = os.getcwd()
-        
-        self.php_path = os.path.join(base_path, "php-8.4.8-nts-Win32-vs17-x64", "php.exe")
+        self.vcredist_tentado = False
         
         self.criar_interface()
 
@@ -1129,43 +1121,165 @@ class DanfeAppMassa:
     
 
         
-    def processar_xml_individual(self, arquivo_xml, pasta_saida):
+    
+    def instalar_vcredist(self):
+        """Instala Visual C++ Redistributable 2015-2022 automaticamente"""
         try:
-            # Detectar se está executando como executável empacotado
-            if getattr(sys, 'frozen', False):
-                # Executável empacotado - arquivos estão em _MEIPASS
-                base_path = sys._MEIPASS
-            else:
-                # Script Python normal
-                base_path = os.getcwd()
+            import urllib.request
             
-            script_php = os.path.join(base_path, "gerador_danfe.php")
-            cmd = [self.php_path, script_php, arquivo_xml]
+            # URL do Visual C++ Redistributable x64 2015-2022
+            url = "https://aka.ms/vs/17/release/vc_redist.x64.exe"
+            arquivo_installer = "vc_redist.x64.exe"
             
-            # Executar PHP sem abrir janela CMD (silencioso)
+            self.adicionar_log("📥 Baixando Visual C++ Redistributable...")
+            
+            # Baixar o installer
+            urllib.request.urlretrieve(url, arquivo_installer)
+            
+            self.adicionar_log("⚙️ Instalando Visual C++ Redistributable...")
+            
+            # Executar instalação silenciosa
             resultado = subprocess.run(
-                cmd, 
-                capture_output=True, 
-                text=True, 
-                cwd=base_path,
-                creationflags=subprocess.CREATE_NO_WINDOW  # Não abrir janela CMD
+                [arquivo_installer, "/quiet", "/norestart"],
+                capture_output=True,
+                text=True,
+                timeout=300  # 5 minutos
             )
             
+            # Limpar arquivo temporário
+            if os.path.exists(arquivo_installer):
+                os.remove(arquivo_installer)
+            
+            if resultado.returncode == 0:
+                self.adicionar_log("✅ Visual C++ Redistributable instalado com sucesso!")
+                return True
+            else:
+                self.adicionar_log(f"❌ Erro na instalação (código: {resultado.returncode})")
+                return False
+                
+        except Exception as e:
+            self.adicionar_log(f"❌ Erro ao instalar dependências: {str(e)}")
+            return False
+
+    def processar_xml_individual(self, arquivo_xml, pasta_saida):
+        try:
+            # Verificar se arquivo XML existe
+            if not os.path.exists(arquivo_xml):
+                self.adicionar_log(f"❌ Arquivo não encontrado: {arquivo_xml}")
+                return False
+            
+            # Verificar se pasta de saída existe
+            if not os.path.exists(pasta_saida):
+                try:
+                    os.makedirs(pasta_saida, exist_ok=True)
+                except Exception as e:
+                    self.adicionar_log(f"❌ Erro ao criar pasta: {pasta_saida} - {str(e)}")
+                    return False
+            
+            # Usar PHP para gerar DANFE
+            # Obter o diretório do script atual
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            php_full_path = os.path.join(script_dir, "php", "php.exe")
+            script_php_full = os.path.join(script_dir, "gerador_danfe.php")
+            
+            # Verificar se arquivos existem
+            if not os.path.exists(php_full_path):
+                self.adicionar_log(f"❌ PHP não encontrado: {php_full_path}")
+                return False
+            
+            if not os.path.exists(script_php_full):
+                self.adicionar_log(f"❌ Script PHP não encontrado: {script_php_full}")
+                return False
+            
+            # Comando para executar PHP (usar caminhos absolutos)
+            cmd = [php_full_path, script_php_full, arquivo_xml]
+            
+                        # Executar PHP com melhor tratamento de erro
+            try:
+                # Executar do diretório php para carregar extensões
+                php_dir = os.path.join(script_dir, "php")
+                resultado = subprocess.run(
+                    cmd, 
+                    capture_output=True, 
+                    text=True, 
+                    timeout=120,
+                    creationflags=subprocess.CREATE_NO_WINDOW,
+                    cwd=php_dir  # Executar do diretório php para carregar extensões
+                )
+            except FileNotFoundError:
+                self.adicionar_log(f"❌ PHP executável não encontrado: {php_full_path}")
+                return False
+            except Exception as e:
+                self.adicionar_log(f"❌ Erro ao executar PHP: {str(e)}")
+                return False
+            
+            # Verificar se é erro de DLL faltando (Visual C++ Redistributable)
+            if resultado.returncode == 3221225781:  # 0xC0000135 - DLL_NOT_FOUND
+                # Tentar instalar apenas uma vez
+                if not self.vcredist_tentado:
+                    self.adicionar_log(f"❌ PHP precisa do Visual C++ Redistributable 2015-2022")
+                    self.adicionar_log(f"🔧 Instalando dependências automaticamente...")
+                    
+                    if self.instalar_vcredist():
+                        self.adicionar_log(f"🔄 Reinicie o aplicativo para usar o PHP corrigido")
+                    
+                    self.vcredist_tentado = True
+                
+                self.adicionar_log(f"❌ {os.path.basename(arquivo_xml)} - Dependência Visual C++ necessária")
+                return False
+            
+            # Verificar resultado
             if resultado.returncode == 0 and "SUCCESS:" in resultado.stdout:
                 arquivo_pdf = resultado.stdout.strip().replace("SUCCESS:", "")
                 
+                # Verificar se PDF foi criado
+                if not os.path.exists(arquivo_pdf):
+                    self.adicionar_log(f"❌ PDF não foi criado: {arquivo_pdf}")
+                    return False
+                
+                # Mover PDF para pasta de saída se necessário
                 if pasta_saida != os.path.dirname(arquivo_xml):
                     nome_pdf = os.path.basename(arquivo_pdf)
                     novo_caminho = os.path.join(pasta_saida, nome_pdf)
                     
-                    if os.path.exists(arquivo_pdf):
+                    try:
+                        # Se arquivo já existe na pasta de destino, removê-lo
+                        if os.path.exists(novo_caminho):
+                            os.remove(novo_caminho)
+                        
                         os.rename(arquivo_pdf, novo_caminho)
+                        nome_pdf = os.path.basename(novo_caminho)
+                    except Exception as e:
+                        self.adicionar_log(f"❌ Erro ao mover PDF: {str(e)}")
+                        return False
+                else:
+                    nome_pdf = os.path.basename(arquivo_pdf)
                 
+                self.adicionar_log(f"✅ {nome_pdf}")
                 return True
             else:
+                # Log do erro detalhado
+                error_msg = resultado.stderr.strip() if resultado.stderr else "Erro desconhecido"
+                stdout_msg = resultado.stdout.strip() if resultado.stdout else ""
+                
+                if "ERROR:" in stdout_msg:
+                    error_msg = stdout_msg.replace("ERROR:", "").strip()
+                
+                # Se não há saída, pode ser problema com dependências
+                if not stdout_msg and not error_msg:
+                    if resultado.returncode == 3221225781:
+                        error_msg = "Dependência Visual C++ necessária"
+                    else:
+                        error_msg = f"PHP erro código {resultado.returncode}"
+                
+                self.adicionar_log(f"❌ {os.path.basename(arquivo_xml)} - {error_msg}")
                 return False
                 
-        except Exception:
+        except subprocess.TimeoutExpired:
+            self.adicionar_log(f"❌ Timeout ao processar: {os.path.basename(arquivo_xml)}")
+            return False
+        except Exception as e:
+            self.adicionar_log(f"❌ Erro inesperado: {str(e)}")
             return False
             
     def abrir_janela_lote(self):
@@ -1177,21 +1291,13 @@ class DanfeAppMassa:
         self.janela_lote.transient(self.root)
         self.janela_lote.grab_set()
         
-        # Título
-        titulo = ctk.CTkLabel(
-            self.janela_lote,
-            text="📋 Adicionar Lote de Dados",
-            font=ctk.CTkFont(size=26, weight="bold")
-        )
-        titulo.pack(pady=25)
-        
-        # Instrução
+        # Instrução compacta
         instrucao = ctk.CTkLabel(
             self.janela_lote,
             text="Preencha os campos abaixo. Use uma linha por registro:",
-            font=ctk.CTkFont(size=14)
+            font=ctk.CTkFont(size=14, weight="bold")
         )
-        instrucao.pack(pady=(0, 20))
+        instrucao.pack(pady=15)
         
         # Frame principal
         main_frame = ctk.CTkFrame(self.janela_lote)
@@ -1390,176 +1496,113 @@ if __name__ == "__main__":
 
 """
 ===============================================================================
-📋 DOCUMENTAÇÃO - SISTEMA LIVE PREVIEW
+📋 DOCUMENTAÇÃO - renamerPRO© SISTEMA DE PROCESSAMENTO DANFE
 Hospital Israelita Albert Einstein - renamerPRO©
 ===============================================================================
 
-🔴 LIVE PREVIEW SYSTEM - MONITORAMENTO EM TEMPO REAL
-----------------------------------------------------
+🚀 SISTEMA DE PROCESSAMENTO DANFE
+---------------------------------
 
-O Sistema Live Preview utiliza a biblioteca 'watchdog' para monitorar mudanças
-em tempo real nos arquivos XML e PDF, proporcionando uma experiência dinâmica
-e profissional ao usuário.
+O renamerPRO© é um sistema profissional para processamento em massa de 
+documentos fiscais eletrônicos (DANFEs), desenvolvido especificamente para 
+ambientes hospitalares.
 
 📁 ARQUIVOS DO SISTEMA:
 -----------------------
-• live_preview.py          - Módulo principal do watchdog
-• danfe_app.py             - Aplicação principal com integração
-• exemplo_live_preview.py  - Exemplo standalone para testes
-• requirements.txt         - Dependências (inclui watchdog>=3.0.0)
+• danfe_app.py             - Aplicação principal com interface moderna
+• gerador_danfe.php        - Engine PHP para geração de DANFEs
+• requirements.txt         - Dependências Python
+• composer.json           - Dependências PHP
 
-🚀 FUNCIONALIDADES PRINCIPAIS:
+🎯 FUNCIONALIDADES PRINCIPAIS:
 ------------------------------
 
-1. 🔍 MONITORAMENTO AUTOMÁTICO:
-   • Detecta arquivos criados, modificados, excluídos e movidos
-   • Filtra apenas arquivos .xml e .pdf
-   • Debounce de 1 segundo para evitar spam de eventos
-   • Monitoramento recursivo de subpastas
+1. 🚀 PROCESSAMENTO EM MASSA:
+   • Converte múltiplos XMLs para PDF simultaneamente
+   • Processamento paralelo (até 5 documentos simultâneos)
+   • Barras de progresso em tempo real
+   • Logs detalhados de cada operação
 
-2. 📊 INTERFACE INTEGRADA:
-   • Checkbox "🔴 Ativar Live Preview" na aba principal
-   • Status em tempo real com contadores de pastas e eventos
-   • Logs coloridos com timestamp no formato [HH:MM:SS]
-   • Auto-ativação quando seleciona pasta XML
+2. 📋 RENOMEAÇÃO INTELIGENTE:
+   • Sistema avançado de mapeamento por chave de acesso
+   • Validação automática de chaves NFe (44 dígitos)
+   • Importação em lote de dados
+   • Interface responsiva com tabela profissional
 
-3. ⚡ PROCESSAMENTO AUTOMÁTICO:
-   • Checkbox "⚡ Auto-processar novos XMLs"
-   • Processa automaticamente novos arquivos XML detectados
-   • Atualiza contagem de arquivos em tempo real
-   • Re-escaneia chaves da aba de renomeação automaticamente
+3. 🎨 INTERFACE MODERNA:
+   • Design profissional com tema Hospital Einstein
+   • Componentes CustomTkinter modernos
+   • Layout responsivo e adaptativo
+   • Paleta de cores médica suavizada
 
-4. 🛠️ GERENCIAMENTO PROFISSIONAL:
-   • Cleanup automático ao fechar aplicação
-   • Múltiplas pastas monitoradas simultaneamente
-   • Tratamento robusto de erros e exceções
-   • Threads separadas para não bloquear interface
-
-🎯 COMO USAR O LIVE PREVIEW:
----------------------------
-
-1. INSTALAÇÃO:
-   pip install -r requirements.txt
-
-2. ATIVAÇÃO NA APLICAÇÃO:
-   • Abra o renamerPRO©
-   • Selecione uma pasta XML
-   • Marque "🔴 Ativar Live Preview"
-   • Opcionalmente marque "⚡ Auto-processar novos XMLs"
-
-3. FUNCIONAMENTO:
-   • Adicione/modifique/remova arquivos XML na pasta monitorada
-   • Observe os logs em tempo real na interface
-   • Arquivos novos são processados automaticamente (se habilitado)
-   • Contagem de arquivos é atualizada instantaneamente
-
-4. TESTE ISOLADO:
-   python exemplo_live_preview.py
-
-📋 LOGS DO LIVE PREVIEW:
------------------------
-
-Formato dos logs: [ÍCONE] [TIMESTAMP] LIVE: arquivo.xml - AÇÃO
-
-Ícones por tipo de evento:
-🟢 - Arquivo criado
-🟡 - Arquivo modificado  
-🔴 - Arquivo excluído
-🔵 - Arquivo movido
-⚪ - Outros eventos
-
-Exemplo de logs:
-[14:25:30] 🟢 LIVE: nota_fiscal_001.xml - CRIADO
-[14:25:31] ⚡ AUTO-PROCESSANDO: nota_fiscal_001.xml
-[14:25:32] ✅ AUTO-SUCESSO: nota_fiscal_001.xml
+4. 🛠️ RECURSOS AVANÇADOS:
+   • Threading para não bloquear interface
+   • Validação rigorosa de arquivos
+   • Processamento local seguro
+   • Logs auditáveis para compliance
 
 🔧 CONFIGURAÇÕES TÉCNICAS:
 -------------------------
 
-• Debounce Timer: 1.0 segundo (evita múltiplas atualizações)
-• Max Workers: 5 threads paralelas para processamento
-• Monitoring: Recursivo (inclui subpastas)
-• File Types: .xml, .pdf
-• Thread Safety: Interface atualizada via root.after()
+• Threads Paralelas: 5 workers simultâneos
+• Validação: Chaves NFe 44 dígitos obrigatórios
+• Formatos: XML → PDF via engine PHP
+• Interface: CustomTkinter com tema hospitalar
+• Arquitetura: MVC com separação de responsabilidades
 
 ⚙️ CLASSES PRINCIPAIS:
 ---------------------
 
-1. LivePreviewHandler(FileSystemEventHandler):
-   • Handler principal para eventos do watchdog
-   • Processa eventos com debounce
-   • Atualiza interface de forma thread-safe
+1. DanfeAppMassa:
+   • Classe principal da aplicação
+   • Gerencia interface e processamento
+   • Controla threading e validações
 
-2. LivePreviewManager:
-   • Gerenciador principal do sistema
-   • Controla Observer do watchdog
-   • Mantém estado de pastas monitoradas
+2. Funcionalidades de Processamento:
+   • processar_xml_individual() - Processamento unitário
+   • processar_xmls_paralelo() - Processamento em massa
+   • validar_chave_nfe() - Validação de chaves
 
-3. Integração na DanfeAppMassa:
-   • self.live_preview: instância do LivePreviewManager
-   • self.live_preview_ativo: BooleanVar para controle
-   • self.auto_processar: BooleanVar para processamento automático
-
-🐛 TROUBLESHOOTING:
-------------------
-
-1. ERRO: "Pasta não existe"
-   → Verifique se o caminho da pasta está correto
-
-2. ERRO: "Falha ao ativar Live Preview" 
-   → Verifique permissões da pasta
-   → Tente reiniciar a aplicação
-
-3. PERFORMANCE: Muitos eventos
-   → Live Preview usa debounce de 1s
-   → Eventos são processados em batch
-
-4. MEMÓRIA: Uso excessivo
-   → Live Preview limpa automaticamente
-   → Observer é finalizado corretamente
-
-📊 STATUS DO SISTEMA:
---------------------
-
-Status possíveis:
-🔴 Inativo                    - Live Preview desabilitado
-🟢 Ativo - X pasta(s) - Y eventos - Funcionando normalmente
+3. Interface Profissional:
+   • criar_botao_profissional() - Botões com tema Einstein
+   • criar_card_profissional() - Cards organizados
+   • Sistema de cores médicas suavizadas
 
 🏥 BOAS PRÁTICAS:
 -----------------
 
 1. PERFORMANCE:
-   • Monitore apenas pastas necessárias
-   • Use auto-processamento com moderação
-   • Feche aplicação adequadamente para cleanup
+   • Use processamento paralelo para grandes volumes
+   • Monitore uso de memória em lotes grandes
+   • Configure threads conforme hardware disponível
 
 2. SEGURANÇA:
-   • Não monitore pastas do sistema
-   • Verifique permissões antes de ativar
-   • Mantenha backups dos arquivos importantes
+   • Validação rigorosa de arquivos de entrada
+   • Processamento local (sem envio externo)
+   • Logs detalhados para auditoria
 
 3. PRODUÇÃO:
-   • Teste em ambiente controlado primeiro
-   • Configure logs adequadamente
-   • Monitore uso de recursos
+   • Teste em ambiente controlado
+   • Mantenha backups dos arquivos importantes
+   • Configure permissões adequadas
 
-💡 DICAS AVANÇADAS:
-------------------
+💡 DICAS DE USO:
+----------------
 
-• Para múltiplas pastas: Use live_preview.adicionar_pasta(nova_pasta)
-• Para reiniciar: Use live_preview.reiniciar() 
-• Para status: Use live_preview.obter_status()
-• Para parar: Use live_preview.parar_monitoramento()
+• Para grandes volumes: Use processamento em massa
+• Para organização: Use renomeação inteligente primeiro
+• Para eficiência: Configure pastas de saída organizadas
+• Para auditoria: Monitore logs de processamento
 
-🎉 BENEFÍCIOS DO LIVE PREVIEW:
------------------------------
+🎉 BENEFÍCIOS DO SISTEMA:
+-------------------------
 
-✅ Experiência de usuário dinâmica e moderna
-✅ Processamento automático de novos arquivos  
-✅ Feedback visual imediato das mudanças
-✅ Redução de cliques e operações manuais
-✅ Monitoramento profissional de arquivos
-✅ Integração transparente com workflow existente
+✅ Interface moderna e profissional
+✅ Processamento rápido e eficiente
+✅ Validação automática de dados
+✅ Organização inteligente de arquivos
+✅ Logs detalhados para compliance
+✅ Tema hospitalar personalizado
 
 ===============================================================================
 🏥 Hospital Israelita Albert Einstein - Departamento de TI

@@ -1,12 +1,32 @@
 <?php
 // Gerador de DANFE - Integração com Python
-require_once 'vendor/autoload.php';
+// Verificar se autoloader existe (pode estar no diretório atual ou pai)
+$autoload_paths = ['vendor/autoload.php', '../vendor/autoload.php'];
+$autoload_found = false;
+
+foreach ($autoload_paths as $path) {
+    if (file_exists($path)) {
+        require_once $path;
+        $autoload_found = true;
+        break;
+    }
+}
+
+if (!$autoload_found) {
+    echo "ERROR:Dependências PHP não instaladas! Execute: composer install\n";
+    exit(1);
+}
 
 use NFePHP\DA\NFe\Danfe;
+
+// Configurar codificação
+mb_internal_encoding('UTF-8');
+mb_http_output('UTF-8');
 
 // Habilita exibição de erros para debug
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+ini_set('memory_limit', '512M');  // Aumentar limite de memória
 
 // Verifica se foi passado o arquivo XML como parâmetro
 if ($argc < 2) {
@@ -71,7 +91,17 @@ try {
     // Cria o gerador de DANFE
     $danfe = new Danfe($xml);
     
-    // Gera o PDF da DANFE
+    // Tentar personalizar textos da DANFE para materiais médicos
+    // Verificar se método existe antes de usar
+    if (method_exists($danfe, 'setTextoDescricaoProduto')) {
+        $danfe->setTextoDescricaoProduto('DESCRIÇÃO DO MATERIAL');
+    } elseif (method_exists($danfe, 'setDescricaoProduto')) {
+        $danfe->setDescricaoProduto('DESCRIÇÃO DO MATERIAL');
+    } elseif (method_exists($danfe, 'setLabelProduto')) {
+        $danfe->setLabelProduto('DESCRIÇÃO DO MATERIAL');
+    }
+    
+    // Gera o PDF da DANFE (formato A4 retrato - padrão Receita Federal)
     $pdf = $danfe->render();
     
     if (empty($pdf)) {
