@@ -6,7 +6,7 @@
 
 **Sistema Profissional de Processamento e Conversão de Documentos Fiscais Eletrônicos (DANFEs)**
 
-Desenvolvido exclusivamente para o **Hospital Israelita Albert Einstein**, este sistema oferece processamento em massa, renomeação inteligente e conversão automática de arquivos XML para documentos DANFE em formato PDF, otimizando o fluxo de trabalho.
+Este sistema oferece processamento em massa, renomeação inteligente e conversão automática de arquivos XML para documentos DANFE em formato PDF, otimizando o fluxo de trabalho.
 
 ---
 
