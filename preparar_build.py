@@ -225,4 +225,4 @@ def main():
     print("\n💡 Para restaurar backup: copie backup/* para ./")
 
 if __name__ == "__main__":
-    main() 
+    main()

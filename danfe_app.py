@@ -8,8 +8,6 @@ import webbrowser
 import time
 import xml.etree.ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import pandas as pd
-from datetime import datetime
 
 
 class DanfeAppMassa:
@@ -34,7 +32,7 @@ class DanfeAppMassa:
         }
         
         self.root = ctk.CTk()
-        self.root.title("⚕️ renamerPRO©")
+        self.root.title("⚕️ renamerPRO© - Hospital Israelita Albert Einstein")
         self.root.geometry("1000x650")
         self.root.minsize(800, 600)
         self.root.resizable(True, True)
@@ -144,7 +142,7 @@ class DanfeAppMassa:
         # Título compacto
         titulo_principal = ctk.CTkLabel(
             header_frame,
-            text="⚕️ renamerPRO©",
+            text="⚕️ renamerPRO© - Hospital Albert Einstein",
             font=ctk.CTkFont(size=12, weight="bold"),
             text_color=self.cores['branco_suave']
         )
@@ -390,8 +388,8 @@ class DanfeAppMassa:
         # Header da aba
         header_card = self.criar_card_profissional(
             container,
-            "📋 Renomeação Inteligente de XMLs e PDFs",
-            "Sistema avançado para renomeação simultânea de XMLs e PDFs por chave de acesso"
+            "📋 Renomeação Inteligente por Chave de Acesso",
+            "Sistema avançado para renomeação e processamento de documentos fiscais"
         )
         header_card.pack(fill="x", pady=0, padx=5)
         
@@ -402,7 +400,7 @@ class DanfeAppMassa:
         
         pasta_label = ctk.CTkLabel(
             config_frame,
-            text="📁 Diretório de Documentos XML e PDF:",
+            text="📁 Diretório de Documentos XML:",
             font=ctk.CTkFont(size=14, weight="bold"),
             text_color=self.cores['cinza_text'],
             anchor="w"
@@ -415,7 +413,7 @@ class DanfeAppMassa:
         
         self.entrada_pasta_renomear = ctk.CTkEntry(
             pasta_container,
-            placeholder_text="Selecione o diretório contendo os arquivos XML e PDF...",
+            placeholder_text="Selecione o diretório contendo os arquivos XML...",
             font=ctk.CTkFont(size=12),
             height=40,
             corner_radius=8,
@@ -443,72 +441,85 @@ class DanfeAppMassa:
         botoes_container = ctk.CTkFrame(controles_card, fg_color="transparent")
         botoes_container.pack(fill="x", padx=12, pady=12)
         
-        # Linha principal de botões - Interface Simplificada
-        linha_botoes = ctk.CTkFrame(botoes_container, fg_color="transparent")
-        linha_botoes.pack(fill="x", pady=10)
+        # Primeira linha de botões
+        linha1 = ctk.CTkFrame(botoes_container, fg_color="transparent")
+        linha1.pack(fill="x", pady=(0, 8))
         
-        # Botões de configuração (esquerda)
-        self.btn_lote_dados = self.criar_botao_profissional(
-            linha_botoes,
-            "LOTE DE DADOS",
-            self.abrir_janela_lote,
-            width=160,
-            height=45,
-            cor_principal="#6C757D",
-            cor_hover="#5A6268",
-            icone="📋"
+        self.btn_escanear_chaves = self.criar_botao_profissional(
+            linha1,
+            "ESCANEAR CHAVES",
+            self.escanear_chaves_xml,
+            width=150,
+            height=40,
+            cor_principal=self.cores['laranja_warning'],
+            cor_hover="#E5A500",
+            icone="🔍"
         )
-        self.btn_lote_dados.pack(side="left", padx=(0, 10))
+        self.btn_escanear_chaves.pack(side="left", padx=(0, 8))
         
         self.btn_adicionar_linha = self.criar_botao_profissional(
-            linha_botoes,
+            linha1,
             "NOVA LINHA",
             self.adicionar_linha_renomeacao,
-            width=140,
-            height=45,
+            width=130,
+            height=40,
             cor_principal=self.cores['azul_accent'],
             cor_hover="#0066CC",
             icone="➕"
         )
-        self.btn_adicionar_linha.pack(side="left", padx=(0, 10))
+        self.btn_adicionar_linha.pack(side="left", padx=8)
+        
+        self.btn_lote_dados = self.criar_botao_profissional(
+            linha1,
+            "LOTE DE DADOS",
+            self.abrir_janela_lote,
+            width=150,
+            height=40,
+            cor_principal="#6C757D",
+            cor_hover="#5A6268",
+            icone="📋"
+        )
+        self.btn_lote_dados.pack(side="left", padx=8)
         
         self.btn_limpar_dados = self.criar_botao_profissional(
-            linha_botoes,
+            linha1,
             "LIMPAR",
             self.limpar_dados_massa,
-            width=110,
-            height=45,
-            cor_principal="#DC3545",
-            cor_hover="#C82333",
+            width=100,
+            height=40,
+            cor_principal="#6C757D",
+            cor_hover="#5A6268",
             icone="🧹"
         )
-        self.btn_limpar_dados.pack(side="left", padx=(0, 10))
+        self.btn_limpar_dados.pack(side="left", padx=8)
         
-        # Novo botão para relatório Excel
-        self.btn_relatorio_excel = self.criar_botao_profissional(
-            linha_botoes,
-            "RELATÓRIO EXCEL",
-            self.gerar_relatorio_excel,
+        # Segunda linha de botões (ações principais)
+        linha2 = ctk.CTkFrame(botoes_container, fg_color="transparent")
+        linha2.pack(fill="x")
+        
+        self.btn_validar_renomear = self.criar_botao_profissional(
+            linha2,
+            "VALIDAR E RENOMEAR",
+            self.validar_e_renomear_thread,
             width=180,
-            height=45,
-            cor_principal="#28A745",
+            height=40,
+            cor_principal=self.cores['verde_success'],
             cor_hover="#218838",
-            icone="📊"
+            icone="✅"
         )
-        self.btn_relatorio_excel.pack(side="left", padx=(0, 20))
+        self.btn_validar_renomear.pack(side="right", padx=(8, 0))
         
-        # Botão principal (direita) - Destaque especial
-        self.btn_processar_completo = self.criar_botao_profissional(
-            linha_botoes,
-            "EXECUTAR TUDO",
-            self.processar_completo_thread,
-            width=220,
-            height=50,
-            cor_principal="#FF6B35",  # Laranja vibrante
-            cor_hover="#E55A2B",
-            icone="🚀"
+        self.btn_processar_selecionados = self.criar_botao_profissional(
+            linha2,
+            "PROCESSAR TODOS",
+            self.processar_selecionados_thread,
+            width=180,
+            height=40,
+            cor_principal=self.cores['azul_primary'],
+            cor_hover=self.cores['azul_secondary'],
+            icone="⚡"
         )
-        self.btn_processar_completo.pack(side="right", padx=(10, 0))
+        self.btn_processar_selecionados.pack(side="right", padx=8)
         
         # Tabela profissional
         tabela_card = self.criar_card_profissional(
@@ -594,10 +605,8 @@ class DanfeAppMassa:
         
         # Log inicial
         self.log_renomeacao.insert("0.0", """⚕️ Hospital Israelita Albert Einstein - Sistema de Renomeação
-📋 Renomeação Inteligente de XMLs e PDFs
-💡 Selecione o diretório e escaneie as chaves para começar.
-🔗 XMLs e PDFs serão renomeados juntos automaticamente.
-🆕 NOVO: Dados de rastro (lote, validade, fabricação) incluídos na DANFE!""")
+📋 Aguardando configuração de diretório...
+💡 Selecione o diretório e escaneie as chaves para começar.""")
 
     def adicionar_linha_renomeacao(self):
         # Container responsivo para linha
@@ -683,8 +692,39 @@ class DanfeAppMassa:
             self.entrada_pasta_renomear.insert(0, pasta)
             
     def escanear_chaves_xml(self):
-        """Função de escaneamento executada em thread"""
-        self.executar_thread_segura(self.escanear_chaves_xml_completo)
+        pasta = self.entrada_pasta_renomear.get()
+        if not pasta:
+            messagebox.showerror("Erro", "Selecione a pasta com XMLs primeiro!")
+            return
+            
+        self.chaves_xml = {}
+        arquivos_processados = 0
+        
+        self.log_renomeacao.delete("0.0", "end")
+        self.log_renomeacao.insert("0.0", "🔍 Escaneando chaves de acesso...\n\n")
+        
+        # Usar função auxiliar (elimina duplicação)
+        arquivos_xml = self.escanear_xmls_pasta(pasta)
+        
+        try:
+            for arquivo in arquivos_xml:
+                nome_arquivo = os.path.basename(arquivo)
+                chave = self.extrair_chave_xml(arquivo)
+                
+                if chave:
+                    self.chaves_xml[chave] = arquivo
+                    arquivos_processados += 1
+                    self.log_renomeacao.insert("end", f"✅ {nome_arquivo}: {chave}\n")
+                else:
+                    self.log_renomeacao.insert("end", f"❌ {nome_arquivo}: Chave não encontrada\n")
+                        
+            self.log_renomeacao.insert("end", f"\n📊 Total: {arquivos_processados} chaves mapeadas\n")
+            self.log_renomeacao.insert("end", "✅ Escaneamento concluído! Agora preencha as chaves desejadas.\n")
+            
+        except Exception as e:
+            self.log_renomeacao.insert("end", f"❌ Erro ao escanear: {str(e)}\n")
+            
+        self.log_renomeacao.see("end")
         
     def extrair_chave_xml(self, caminho_arquivo):
         try:
@@ -717,189 +757,23 @@ class DanfeAppMassa:
             return None
             
     def validar_e_renomear_thread(self):
-        """Função de validação e renomeação executada em thread"""
-        self.executar_thread_segura(self.validar_e_renomear_completo)
-
-    def processar_completo_thread(self):
-        """Função que executa TUDO: escaneamento + validação + renomeação"""
-        self.executar_thread_segura(self.processar_tudo_completo)
-
-    def processar_tudo_completo(self):
-        """Função completa que faz escaneamento, validação e renomeação em sequência"""
-        pasta = self.entrada_pasta_renomear.get()
-        if not pasta:
-            def mostrar_erro():
-                messagebox.showerror("Erro", "Selecione a pasta com arquivos XML primeiro!")
-            
-            self.root.after(0, mostrar_erro)
-            return
-            
-        if not self.linhas_renomeacao:
-            def mostrar_erro_dados():
-                messagebox.showerror("Erro", "Adicione dados para renomeação!\n\nUse 'LOTE DE DADOS' ou 'NOVA LINHA' para adicionar registros primeiro.")
-            
-            self.root.after(0, mostrar_erro_dados)
-            return
-
-        # Log inicial
-        def log_inicial():
-            self.log_renomeacao.insert("end", f"\n🚀 INICIANDO PROCESSAMENTO COMPLETO...\n")
-            self.log_renomeacao.insert("end", f"📁 Pasta: {pasta}\n")
-            self.log_renomeacao.insert("end", f"📋 Registros para processar: {len(self.linhas_renomeacao)}\n\n")
-            self.log_renomeacao.see("end")
+        # Usar função auxiliar (elimina duplicação)
+        self.executar_thread_segura(self.validar_e_renomear)
         
-        self.root.after(0, log_inicial)
-
-        try:
-            # ETAPA 1: Escaneamento das chaves
-            def log_etapa1():
-                self.log_renomeacao.insert("end", "🔍 ETAPA 1/3: ESCANEANDO CHAVES DE ACESSO...\n")
-                self.log_renomeacao.see("end")
-            
-            self.root.after(0, log_etapa1)
-            
-            self.chaves_xml = {}
-            arquivos_processados = 0
-            
-            arquivos_xml = self.escanear_xmls_pasta(pasta)
-            
-            if not arquivos_xml:
-                def mostrar_erro_xml():
-                    self.log_renomeacao.insert("end", "❌ Nenhum arquivo XML encontrado na pasta!\n")
-                    self.log_renomeacao.see("end")
-                    messagebox.showerror("Erro", "Nenhum arquivo XML encontrado na pasta selecionada!")
-                
-                self.root.after(0, mostrar_erro_xml)
-                return
-            
-            # Processar arquivos XML e PDFs
-            self.associacoes_pdf = self.associar_xml_pdf(pasta)
-            
-            for chave, dados in self.associacoes_pdf.items():
-                self.chaves_xml[chave] = dados['xml']
-                arquivos_processados += 1
-
-            def log_resultado_escaneamento():
-                self.log_renomeacao.insert("end", f"✅ Escaneamento concluído: {arquivos_processados} chaves encontradas\n\n")
-                self.log_renomeacao.see("end")
-            
-            self.root.after(0, log_resultado_escaneamento)
-
-            if arquivos_processados == 0:
-                def mostrar_erro_chaves():
-                    self.log_renomeacao.insert("end", "❌ Nenhuma chave de acesso encontrada nos XMLs!\n")
-                    self.log_renomeacao.see("end")
-                    messagebox.showerror("Erro", "Nenhuma chave de acesso foi encontrada nos arquivos XML!")
-                
-                self.root.after(0, mostrar_erro_chaves)
-                return
-
-            # ETAPA 2 e 3: Validação e Renomeação
-            def log_etapa2():
-                self.log_renomeacao.insert("end", "✅ ETAPA 2/3: VALIDANDO E RENOMEANDO ARQUIVOS...\n")
-                self.log_renomeacao.see("end")
-            
-            self.root.after(0, log_etapa2)
-            
-            sucessos = 0
-            erros = 0
-            
-            for linha in self.linhas_renomeacao:
-                chave_original = linha['chave'].get().strip()
-                nome_final = linha['nome'].get().strip()
-                
-                if not chave_original or not nome_final:
-                    continue
-                    
-                chave = chave_original.strip()
-                
-                # Validar chave
-                if not self.validar_chave_nfe(chave):
-                    def atualizar_status():
-                        linha['status'].configure(text="❌ Chave")
-                    
-                    self.root.after(0, atualizar_status)
-                    erros += 1
-                    continue
-                    
-                # Verificar se chave existe
-                if chave not in self.chaves_xml:
-                    def atualizar_status():
-                        linha['status'].configure(text="❌ N/Existe")
-                    
-                    self.root.after(0, atualizar_status)
-                    erros += 1
-                    continue
-                    
-                # Renomear XML e PDF
-                try:
-                    resultado_renomeacao = self.renomear_xml_e_pdf(chave, nome_final)
-                    
-                    if resultado_renomeacao['sucesso']:
-                        def atualizar_status():
-                            linha['status'].configure(text="✅ OK")
-                        
-                        self.root.after(0, atualizar_status)
-                        sucessos += 1
-                    else:
-                        def atualizar_status():
-                            linha['status'].configure(text="❌ Erro")
-                        
-                        self.root.after(0, atualizar_status)
-                        erros += 1
-                        
-                except Exception as e:
-                    def atualizar_status():
-                        linha['status'].configure(text="❌ Erro")
-                    
-                    self.root.after(0, atualizar_status)
-                    erros += 1
-
-            # ETAPA 3: Finalização
-            def log_finalizacao():
-                self.log_renomeacao.insert("end", f"\n🎉 ETAPA 3/3: PROCESSAMENTO DE XMLs E PDFs FINALIZADO!\n")
-                self.log_renomeacao.insert("end", f"✅ Conjuntos XMLs+PDFs renomeados: {sucessos}\n")
-                self.log_renomeacao.insert("end", f"❌ Erros encontrados: {erros}\n")
-                self.log_renomeacao.insert("end", f"📊 Total processado: {sucessos + erros}\n")
-                self.log_renomeacao.insert("end", f"🎯 Taxa de sucesso: {(sucessos/(sucessos+erros)*100):.1f}%\n" if (sucessos + erros) > 0 else "")
-                self.log_renomeacao.see("end")
-                
-                # Mostrar resultado final
-                if sucessos > 0:
-                    messagebox.showinfo("🎉 Processamento Completo!", f"Processamento de XMLs e PDFs finalizado!\n\n✅ {sucessos} conjunto(s) de arquivos renomeados\n❌ {erros} erros\n\nXMLs e PDFs foram processados juntos automaticamente!\nTodos os arquivos com chaves válidas foram renomeados.")
-                else:
-                    messagebox.showwarning("⚠️ Processamento Concluído", f"Processamento finalizado com problemas.\n\n❌ {erros} erros encontrados\n✅ {sucessos} sucessos\n\nVerifique os dados e tente novamente.")
-            
-            self.root.after(0, log_finalizacao)
-
-        except Exception as e:
-            def mostrar_erro_geral():
-                error_msg = f"❌ ERRO DURANTE PROCESSAMENTO: {str(e)}\n"
-                self.log_renomeacao.insert("end", error_msg)
-                self.log_renomeacao.see("end")
-                messagebox.showerror("Erro Crítico", f"Erro durante o processamento completo:\n\n{str(e)}\n\nTente novamente ou use as funções individuais.")
-            
-            self.root.after(0, mostrar_erro_geral)
-        
-    def validar_e_renomear_completo(self):
+    def validar_e_renomear(self):
         pasta = self.entrada_pasta_renomear.get()
         if not pasta:
             messagebox.showerror("Erro", "Selecione a pasta primeiro!")
             return
             
         if not self.chaves_xml:
-            messagebox.showerror("Erro", "Execute o escaneamento de chaves primeiro!\n\nClique em 'ESCANEAR CHAVES' antes de validar.")
-            return
-            
-        if not self.linhas_renomeacao:
-            messagebox.showerror("Erro", "Adicione dados para renomeação!\n\nUse 'LOTE DE DADOS' ou 'NOVA LINHA' para adicionar registros.")
+            messagebox.showerror("Erro", "Escaneie as chaves primeiro!")
             return
             
         sucessos = 0
         erros = 0
         
-        # Buffer para logs - OTIMIZAÇÃO
-        log_buffer = ["\n🚀 INICIANDO VALIDAÇÃO E RENOMEAÇÃO DE XMLs E PDFs...\n\n"]
+        self.root.after(0, lambda: self.log_renomeacao.insert("end", "\n🚀 INICIANDO VALIDAÇÃO E RENOMEAÇÃO...\n\n"))
         
         for linha in self.linhas_renomeacao:
             chave_original = linha['chave'].get().strip()
@@ -912,72 +786,51 @@ class DanfeAppMassa:
             
             # Validar chave (usando função auxiliar - elimina duplicação)
             if not self.validar_chave_nfe(chave):
-                def atualizar_status():
-                    linha['status'].configure(text="❌ Chave")
-                
-                self.root.after(0, atualizar_status)
-                log_buffer.append(f"❌ Chave inválida: {chave}\n")
+                self.root.after(0, lambda l=linha: l['status'].configure(text="❌ Chave"))
+                self.root.after(0, lambda c=chave: self.log_renomeacao.insert("end", f"❌ Chave inválida: {c}\n"))
                 erros += 1
                 continue
                 
             # Verificar se chave existe
             if chave not in self.chaves_xml:
-                def atualizar_status():
-                    linha['status'].configure(text="❌ N/Existe")
-                
-                self.root.after(0, atualizar_status)
-                log_buffer.append(f"❌ Chave não encontrada nos XMLs: {chave}\n")
+                self.root.after(0, lambda l=linha: l['status'].configure(text="❌ N/Existe"))
+                self.root.after(0, lambda c=chave: self.log_renomeacao.insert("end", f"❌ Chave não encontrada: {c}\n"))
                 erros += 1
                 continue
                 
-                        # Renomear XML e PDF
+            # Renomear arquivo
             try:
-                resultado_renomeacao = self.renomear_xml_e_pdf(chave, nome_final)
+                arquivo_original = self.chaves_xml[chave]
+                pasta_arquivo = os.path.dirname(arquivo_original)
+                novo_nome = os.path.join(pasta_arquivo, f"{nome_final}.xml")
                 
-                if resultado_renomeacao['sucesso']:
-                    def atualizar_status():
-                        linha['status'].configure(text="✅ OK")
-                    
-                    self.root.after(0, atualizar_status)
-                    log_buffer.append(resultado_renomeacao['log'])
-                    sucessos += 1
-                else:
-                    def atualizar_status():
-                        linha['status'].configure(text="❌ Erro")
-            
-                    self.root.after(0, atualizar_status)  
-                    log_buffer.append(resultado_renomeacao['log'])
+                if os.path.exists(novo_nome):
+                    self.root.after(0, lambda l=linha: l['status'].configure(text="❌ Existe"))
+                    self.root.after(0, lambda n=nome_final: self.log_renomeacao.insert("end", f"❌ Arquivo já existe: {n}.xml\n"))
                     erros += 1
-            
-            except Exception as e:
-                def atualizar_status():
-                    linha['status'].configure(text="❌ Erro")
+                    continue
+                    
+                os.rename(arquivo_original, novo_nome)
+                self.root.after(0, lambda l=linha: l['status'].configure(text="✅ OK"))
+                self.root.after(0, lambda o=os.path.basename(arquivo_original), n=nome_final: 
+                              self.log_renomeacao.insert("end", f"✅ {o} → {n}.xml\n"))
+                sucessos += 1
                 
-                self.root.after(0, atualizar_status)
-                log_buffer.append(f"❌ Erro inesperado: {str(e)}\n")
+                # Atualizar o dicionário
+                self.chaves_xml[chave] = novo_nome
+                
+            except Exception as e:
+                self.root.after(0, lambda l=linha: l['status'].configure(text="❌ Erro"))
+                self.root.after(0, lambda e=str(e): self.log_renomeacao.insert("end", f"❌ Erro: {e}\n"))
                 erros += 1
                 
-        # Adicionar logs finais
-        log_buffer.extend([
-            f"\n🎉 VALIDAÇÃO E RENOMEAÇÃO DE XMLs E PDFs CONCLUÍDA!\n",
-            f"✅ Sucessos: {sucessos}\n",
-            f"❌ Erros: {erros}\n",
-            f"📊 Total processado: {sucessos + erros}\n"
-        ])
+        self.root.after(0, lambda: self.log_renomeacao.insert("end", f"\n🎉 RENOMEAÇÃO CONCLUÍDA!\n"))
+        self.root.after(0, lambda: self.log_renomeacao.insert("end", f"✅ Sucessos: {sucessos}\n"))
+        self.root.after(0, lambda: self.log_renomeacao.insert("end", f"❌ Erros: {erros}\n"))
+        self.root.after(0, lambda: self.log_renomeacao.see("end"))
         
-        # OTIMIZAÇÃO: Uma única atualização da interface
-        def atualizar_interface_final():
-            for log in log_buffer:
-                self.log_renomeacao.insert("end", log)
-            self.log_renomeacao.see("end")
-            
-            # Mostrar resultado
-            if sucessos > 0:
-                messagebox.showinfo("Concluído!", f"🎉 Renomeação de XMLs e PDFs Finalizada!\n\n✅ {sucessos} conjunto(s) de arquivos renomeados\n❌ {erros} erros encontrados\n\nXMLs e PDFs foram renomeados juntos!\nConfira o log para detalhes.")
-            else:
-                messagebox.showwarning("Atenção", f"Nenhum arquivo foi renomeado.\n\n❌ {erros} erros encontrados\n\nVerifique os dados e tente novamente.")
-            
-        self.root.after(0, atualizar_interface_final)
+        if sucessos > 0:
+            messagebox.showinfo("Concluído!", f"Renomeação finalizada!\n\n✅ {sucessos} arquivos renomeados\n❌ {erros} erros")
     
     def limpar_dados_massa(self):
         resposta = messagebox.askyesno(
@@ -999,183 +852,69 @@ class DanfeAppMassa:
             
             messagebox.showinfo("Limpeza Concluída!", "✅ Todos os dados foram removidos da tabela!")
     
-    def gerar_relatorio_excel(self):
-        """Gera um relatório completo em Excel com todos os dados da tabela de mapeamento"""
-        try:
-            if not self.linhas_renomeacao:
-                messagebox.showwarning("Aviso", "⚠️ Nenhum dado para gerar relatório!\n\nAdicione dados na tabela primeiro usando 'LOTE DE DADOS' ou 'NOVA LINHA'.")
-                return
+    def processar_selecionados_thread(self):
+        if self.processando:
+            return
+        
+        # Usar função auxiliar (elimina duplicação)
+        self.executar_thread_segura(self.processar_selecionados)
+    
+    def processar_selecionados(self):
+        pasta_xml = self.entrada_pasta_renomear.get()
+        
+        if not pasta_xml:
+            messagebox.showerror("Erro", "Selecione a pasta com XMLs primeiro!")
+            return
+        
+        # Escanear TODOS os XMLs da pasta (usando função auxiliar - elimina duplicação)
+        todos_xmls = self.escanear_xmls_pasta(pasta_xml)
+        
+        if not todos_xmls:
+            messagebox.showerror("Erro", "Nenhum arquivo XML encontrado na pasta!")
+            return
+        
+        # Determinar pasta de saída
+        pasta_saida = self.entrada_pasta_renomear.get()  # Usar a mesma pasta por padrão
+        
+        self.processando = True
+        total = len(todos_xmls)
+        sucessos = 0
+        erros = 0
+        
+        self.root.after(0, lambda: self.btn_processar_selecionados.configure(state="disabled", text="🔄 Processando..."))
+        self.root.after(0, lambda: self.btn_validar_renomear.configure(state="disabled"))
+        
+        self.root.after(0, lambda: self.log_renomeacao.insert("end", f"\n🚀 PROCESSANDO TODOS OS XMLs DA PASTA:\n"))
+        self.root.after(0, lambda: self.log_renomeacao.insert("end", f"📊 Total: {total} arquivos\n"))
+        self.root.after(0, lambda: self.log_renomeacao.insert("end", f"📤 Pasta saída: {pasta_saida}\n\n"))
+        
+        inicio = time.time()
+        
+        # Processar com função auxiliar (elimina duplicação)
+        def callback_sucesso(nome):
+            self.log_renomeacao.insert("end", f"✅ {nome}\n")
             
-            # Coletar dados da tabela
-            dados_relatorio = []
-            for i, linha in enumerate(self.linhas_renomeacao, 1):
-                chave = linha['chave'].get().strip()
-                nome = linha['nome'].get().strip()
-                status = linha['status'].cget("text")
-                
-                # Criar registro do relatório
-                registro = {
-                    'Linha': i,
-                    'Chave de Acesso': chave,
-                    'Nome do Arquivo': nome,
-                    'Status': status,
-                    'Chave Válida': '✅ Sim' if self.validar_chave_nfe(chave) else '❌ Não',
-                    'Preenchido': '✅ Completo' if (chave and nome) else '⚠️ Incompleto',
-                    'Timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                }
-                
-                # Adicionar informações extras se disponível
-                if hasattr(self, 'chaves_xml') and chave in self.chaves_xml:
-                    registro['XML Encontrado'] = '✅ Sim'
-                    registro['Caminho XML'] = self.chaves_xml[chave]
-                else:
-                    registro['XML Encontrado'] = '❌ Não'
-                    registro['Caminho XML'] = ''
-                
-                # Verificar PDF associado
-                if hasattr(self, 'associacoes_pdf') and chave in self.associacoes_pdf:
-                    pdf_path = self.associacoes_pdf[chave]['pdf']
-                    registro['PDF Encontrado'] = '✅ Sim' if pdf_path else '❌ Não'
-                    registro['Caminho PDF'] = pdf_path or ''
-                else:
-                    registro['PDF Encontrado'] = '❌ Não'
-                    registro['Caminho PDF'] = ''
-                
-                dados_relatorio.append(registro)
+        def callback_erro(nome):
+            self.log_renomeacao.insert("end", f"❌ {nome}\n")
             
-            # Solicitar local para salvar
-            pasta_renomear = self.entrada_pasta_renomear.get()
-            pasta_inicial = pasta_renomear if pasta_renomear else os.path.expanduser("~")
-            
-            nome_arquivo = f"Relatorio_Renomeacao_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
-            arquivo_excel = filedialog.asksaveasfilename(
-                title="Salvar Relatório de Renomeação",
-                initialdir=pasta_inicial,
-                defaultextension=".xlsx",
-                filetypes=[
-                    ("Excel files", "*.xlsx"),
-                    ("All files", "*.*")
-                ],
-                initialfile=nome_arquivo
-            )
-            
-            if not arquivo_excel:
-                return
-            
-            # Criar DataFrame
-            df = pd.DataFrame(dados_relatorio)
-            
-            # Criar Excel com formatação
-            with pd.ExcelWriter(arquivo_excel, engine='openpyxl') as writer:
-                # Escrever dados principais
-                df.to_excel(writer, sheet_name='Relatório Renomeação', index=False)
-                
-                # Obter workbook e worksheet para formatação
-                workbook = writer.book
-                worksheet = writer.sheets['Relatório Renomeação']
-                
-                # Ajustar largura das colunas
-                for column in worksheet.columns:
-                    max_length = 0
-                    column_letter = column[0].column_letter
-                    
-                    for cell in column:
-                        try:
-                            if len(str(cell.value)) > max_length:
-                                max_length = len(str(cell.value))
-                        except:
-                            pass
-                    
-                    adjusted_width = min(max_length + 2, 50)
-                    worksheet.column_dimensions[column_letter].width = adjusted_width
-                
-                # Criar planilha de resumo
-                resumo_data = []
-                total_registros = len(dados_relatorio)
-                chaves_validas = sum(1 for r in dados_relatorio if r['Chave Válida'] == '✅ Sim')
-                registros_completos = sum(1 for r in dados_relatorio if r['Preenchido'] == '✅ Completo')
-                xmls_encontrados = sum(1 for r in dados_relatorio if r['XML Encontrado'] == '✅ Sim')
-                pdfs_encontrados = sum(1 for r in dados_relatorio if r['PDF Encontrado'] == '✅ Sim')
-                
-                # Status dos registros
-                status_ok = sum(1 for r in dados_relatorio if '✅' in r['Status'])
-                status_erro = sum(1 for r in dados_relatorio if '❌' in r['Status'])
-                status_aguardando = sum(1 for r in dados_relatorio if '⏳' in r['Status'])
-                
-                resumo_data = [
-                    ['📊 RESUMO DO RELATÓRIO DE RENOMEAÇÃO', ''],
-                    ['Data/Hora Geração:', datetime.now().strftime("%d/%m/%Y %H:%M:%S")],
-                    ['Pasta de Trabalho:', pasta_renomear or 'Não selecionada'],
-                    ['', ''],
-                    ['📋 ESTATÍSTICAS GERAIS', ''],
-                    ['Total de Registros:', total_registros],
-                    ['Registros Completos:', f"{registros_completos} ({registros_completos/total_registros*100:.1f}%)" if total_registros > 0 else '0'],
-                    ['Chaves Válidas:', f"{chaves_validas} ({chaves_validas/total_registros*100:.1f}%)" if total_registros > 0 else '0'],
-                    ['', ''],
-                    ['📄 ARQUIVOS ENCONTRADOS', ''],
-                    ['XMLs Encontrados:', f"{xmls_encontrados} ({xmls_encontrados/total_registros*100:.1f}%)" if total_registros > 0 else '0'],
-                    ['PDFs Encontrados:', f"{pdfs_encontrados} ({pdfs_encontrados/total_registros*100:.1f}%)" if total_registros > 0 else '0'],
-                    ['', ''],
-                    ['🎯 STATUS DOS REGISTROS', ''],
-                    ['Processados com Sucesso:', status_ok],
-                    ['Erros Encontrados:', status_erro],
-                    ['Aguardando Processamento:', status_aguardando],
-                    ['', ''],
-                    ['💡 OBSERVAÇÕES', ''],
-                    ['• Chaves devem ter exatamente 44 dígitos numéricos', ''],
-                    ['• XMLs e PDFs são renomeados em conjunto', ''],
-                    ['• Status mostra resultado do último processamento', ''],
-                    ['• Relatório gerado automaticamente pelo renamerPRO©', '']
-                ]
-                
-                # Criar DataFrame do resumo
-                df_resumo = pd.DataFrame(resumo_data)
-                df_resumo.columns = ['Parâmetro', 'Valor']
-                df_resumo.to_excel(writer, sheet_name='Resumo', index=False)
-                
-                # Ajustar largura das colunas do resumo
-                resumo_ws = writer.sheets['Resumo']
-                resumo_ws.column_dimensions['A'].width = 40
-                resumo_ws.column_dimensions['B'].width = 30
-            
-            # Log de sucesso
-            self.log_renomeacao.insert("end", f"\n📊 RELATÓRIO EXCEL GERADO:\n")
-            self.log_renomeacao.insert("end", f"✅ Arquivo: {os.path.basename(arquivo_excel)}\n")
-            self.log_renomeacao.insert("end", f"📁 Local: {os.path.dirname(arquivo_excel)}\n")
-            self.log_renomeacao.insert("end", f"📋 Registros: {len(dados_relatorio)}\n")
-            self.log_renomeacao.insert("end", f"📊 Planilhas: Relatório + Resumo\n")
-            self.log_renomeacao.see("end")
-            
-            # Perguntar se deseja abrir o arquivo
-            resposta = messagebox.askyesno(
-                "Relatório Gerado!", 
-                f"📊 Relatório Excel criado com sucesso!\n\n"
-                f"📁 Arquivo: {os.path.basename(arquivo_excel)}\n"
-                f"📋 {len(dados_relatorio)} registros exportados\n"
-                f"📊 2 planilhas: Dados + Resumo\n\n"
-                f"Deseja abrir o arquivo agora?"
-            )
-            
-            if resposta:
-                try:
-                    os.startfile(arquivo_excel)
-                except:
-                    webbrowser.open(arquivo_excel)
-            
-        except ImportError:
-            messagebox.showerror(
-                "Erro - Biblioteca Necessária", 
-                "❌ Biblioteca pandas não encontrada!\n\n"
-                "Para usar esta funcionalidade, instale:\n"
-                "pip install pandas openpyxl\n\n"
-                "Ou execute o arquivo requirements.txt"
-            )
-        except Exception as e:
-            error_msg = f"❌ Erro ao gerar relatório: {str(e)}\n"
-            self.log_renomeacao.insert("end", error_msg)
-            self.log_renomeacao.see("end")
-            messagebox.showerror("Erro", f"Erro ao gerar relatório Excel:\n\n{str(e)}")
-
+        sucessos, erros, tempo_total = self.processar_xmls_paralelo(
+            todos_xmls, pasta_saida, callback_sucesso, callback_erro
+        )
+        
+        self.root.after(0, lambda: self.log_renomeacao.insert("end", f"\n🎉 PROCESSAMENTO CONCLUÍDO!\n"))
+        self.root.after(0, lambda: self.log_renomeacao.insert("end", f"✅ PDFs criados: {sucessos}\n"))
+        self.root.after(0, lambda: self.log_renomeacao.insert("end", f"❌ Erros: {erros}\n"))
+        self.root.after(0, lambda: self.log_renomeacao.insert("end", f"⏱️ Tempo total: {tempo_total:.1f} segundos\n"))
+        
+        self.root.after(0, lambda: self.btn_processar_selecionados.configure(state="normal", text="🎯 PROCESSAR TODOS XMLs"))
+        self.root.after(0, lambda: self.btn_validar_renomear.configure(state="normal"))
+        self.root.after(0, lambda: self.log_renomeacao.see("end"))
+        
+        # Usar função auxiliar (elimina duplicação)
+        self.mostrar_conclusao_processamento(sucessos, erros, tempo_total, pasta_saida)
+        
+        self.processando = False
+        
     # ============= FUNÇÕES AUXILIARES (ELIMINAM DUPLICAÇÕES) =============
     
     def escanear_xmls_pasta(self, pasta):
@@ -1190,169 +929,6 @@ class DanfeAppMassa:
             print(f"Erro ao escanear pasta: {e}")
         return arquivos_xml
 
-    def escanear_arquivos_pasta(self, pasta):
-        """Função para escanear XMLs e PDFs de uma pasta"""
-        arquivos = {'xml': [], 'pdf': []}
-        try:
-            for arquivo in os.listdir(pasta):
-                caminho_completo = os.path.join(pasta, arquivo)
-                if arquivo.lower().endswith('.xml'):
-                    arquivos['xml'].append(caminho_completo)
-                elif arquivo.lower().endswith('.pdf'):
-                    arquivos['pdf'].append(caminho_completo)
-        except Exception as e:
-            print(f"Erro ao escanear pasta: {e}")
-        return arquivos
-
-    def associar_xml_pdf(self, pasta):
-        """Associa XMLs com seus PDFs correspondentes por nome similar"""
-        arquivos = self.escanear_arquivos_pasta(pasta)
-        associacoes = {}
-        
-        for xml_path in arquivos['xml']:
-            xml_nome = os.path.splitext(os.path.basename(xml_path))[0]
-            chave = self.extrair_chave_xml(xml_path)
-            
-            if chave:
-                # Buscar PDF correspondente
-                pdf_correspondente = None
-                
-                # Tentativa 1: PDF com mesmo nome do XML
-                pdf_mesmo_nome = os.path.join(pasta, f"{xml_nome}.pdf")
-                if os.path.exists(pdf_mesmo_nome):
-                    pdf_correspondente = pdf_mesmo_nome
-                else:
-                    # Tentativa 2: PDF com sufixo _DANFE (apenas para compatibilidade)
-                    pdf_danfe = os.path.join(pasta, f"{xml_nome}_DANFE.pdf")
-                    if os.path.exists(pdf_danfe):
-                        pdf_correspondente = pdf_danfe
-                    else:
-                        # Tentativa 3: PDF com a chave no nome
-                        for pdf_path in arquivos['pdf']:
-                            pdf_nome = os.path.basename(pdf_path)
-                            if chave in pdf_nome or xml_nome.lower() in pdf_nome.lower():
-                                pdf_correspondente = pdf_path
-                                break
-                
-                associacoes[chave] = {
-                    'xml': xml_path,
-                    'pdf': pdf_correspondente
-                }
-        
-        return associacoes
-
-    def gerar_pdf_personalizado(self, arquivo_xml, nome_final):
-        """Gera PDF com nome personalizado (sem sufixo _DANFE)"""
-        try:
-            # Verificações pré-processamento
-            if not hasattr(self, '_php_validado'):
-                self._validar_ambiente_php()
-            
-            # Usar PHP para gerar DANFE com nome personalizado
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            php_full_path = os.path.join(script_dir, "php", "php.exe")
-            script_php_full = os.path.join(script_dir, "gerador_danfe.php")
-            
-            # Comando com nome personalizado
-            cmd = [php_full_path, script_php_full, arquivo_xml, nome_final]
-            
-            # Executar PHP
-            php_dir = os.path.join(script_dir, "php")
-            resultado = subprocess.run(
-                cmd, 
-                capture_output=True, 
-                text=True, 
-                timeout=60,
-                creationflags=subprocess.CREATE_NO_WINDOW,
-                cwd=php_dir
-            )
-            
-            # Verificar resultado
-            if resultado.returncode == 0 and "SUCCESS:" in resultado.stdout:
-                arquivo_pdf = resultado.stdout.strip().replace("SUCCESS:", "")
-                return arquivo_pdf if os.path.exists(arquivo_pdf) else None
-            else:
-                return None
-                
-        except Exception as e:
-            print(f"Erro ao gerar PDF personalizado: {e}")
-            return None
-
-    def renomear_xml_e_pdf(self, chave, nome_final):
-        """Renomeia XML e gera/renomeia PDF com o novo nome (SEM sufixo _DANFE)"""
-        try:
-            resultado = {'sucesso': False, 'log': ''}
-            
-            if chave not in self.chaves_xml:
-                resultado['log'] = f"❌ Chave não encontrada: {chave}\n"
-                return resultado
-            
-            # Obter informações do XML
-            xml_original = self.chaves_xml[chave]
-            pasta_arquivo = os.path.dirname(xml_original)
-            novo_xml = os.path.join(pasta_arquivo, f"{nome_final}.xml")
-            novo_pdf = os.path.join(pasta_arquivo, f"{nome_final}.pdf")
-            
-            # Verificar se arquivos já existem
-            if os.path.exists(novo_xml):
-                resultado['log'] = f"❌ XML já existe: {nome_final}.xml\n"
-                return resultado
-            
-            if os.path.exists(novo_pdf):
-                resultado['log'] = f"❌ PDF já existe: {nome_final}.pdf\n"
-                return resultado
-            
-            # Executar renomeação e geração
-            arquivos_processados = []
-            
-            # 1. Renomear XML
-            os.rename(xml_original, novo_xml)
-            arquivos_processados.append(f"📄 XML: {os.path.basename(xml_original)} → {nome_final}.xml")
-            self.chaves_xml[chave] = novo_xml
-            
-            # 2. Gerar PDF com nome personalizado (SEM sufixo _DANFE)
-            try:
-                pdf_gerado = self.gerar_pdf_personalizado(novo_xml, nome_final)
-                
-                if pdf_gerado and os.path.exists(pdf_gerado):
-                    arquivos_processados.append(f"📄 PDF: Gerado como {nome_final}.pdf")
-                    
-                    # Atualizar associações se existirem
-                    if hasattr(self, 'associacoes_pdf') and chave in self.associacoes_pdf:
-                        # Remover PDF antigo se existir
-                        pdf_antigo = self.associacoes_pdf[chave]['pdf']
-                        if pdf_antigo and os.path.exists(pdf_antigo) and pdf_antigo != pdf_gerado:
-                            try:
-                                os.remove(pdf_antigo)
-                            except:
-                                pass
-                        
-                        self.associacoes_pdf[chave]['pdf'] = pdf_gerado
-                else:
-                    # Se falhou ao gerar PDF, ainda assim é sucesso parcial
-                    arquivos_processados.append(f"⚠️ PDF: Erro ao gerar (XML renomeado com sucesso)")
-                    
-            except Exception as e:
-                # Se PDF falhar, manter o XML renomeado
-                arquivos_processados.append(f"⚠️ PDF: Erro ao gerar - {str(e)} (XML renomeado com sucesso)")
-            
-            # Sucesso (mesmo se PDF falhou)
-            resultado['sucesso'] = True
-            resultado['log'] = f"✅ {' + '.join(arquivos_processados)}\n"
-            return resultado
-            
-        except Exception as e:
-            # Tentar reverter XML se algo deu errado
-            try:
-                if 'novo_xml' in locals() and os.path.exists(novo_xml):
-                    os.rename(novo_xml, xml_original)
-                    self.chaves_xml[chave] = xml_original
-            except:
-                pass
-            
-            resultado['log'] = f"❌ Erro ao processar arquivos: {str(e)}\n"
-            return resultado
-
     def validar_chave_nfe(self, chave):
         """Função auxiliar para validar chave NFe (elimina duplicação)"""
         chave = str(chave).strip()
@@ -1365,18 +941,14 @@ class DanfeAppMassa:
         thread.start()
 
     def processar_xmls_paralelo(self, arquivos_xml, pasta_saida, callback_sucesso=None, callback_erro=None):
-        """Função auxiliar para processamento paralelo OTIMIZADA (elimina duplicação)"""
+        """Função auxiliar para processamento paralelo (elimina duplicação)"""
         sucessos = 0
         erros = 0
         inicio = time.time()
         
-        # Buffer para logs - OTIMIZAÇÃO CRÍTICA
-        log_buffer = []
-        buffer_size = 10  # Atualizar interface a cada 10 arquivos
-        
         with ThreadPoolExecutor(max_workers=5) as executor:
             futures = {
-                executor.submit(self.processar_xml_individual_otimizado, arquivo, pasta_saida): arquivo 
+                executor.submit(self.processar_xml_individual, arquivo, pasta_saida): arquivo 
                 for arquivo in arquivos_xml
             }
             
@@ -1388,102 +960,19 @@ class DanfeAppMassa:
                     resultado = future.result()
                     if resultado:
                         sucessos += 1
-                        log_buffer.append(f"✅ {nome_arquivo}")
+                        if callback_sucesso:
+                            self.root.after(0, lambda n=nome_arquivo: callback_sucesso(n))
                     else:
                         erros += 1
-                        log_buffer.append(f"❌ {nome_arquivo}")
+                        if callback_erro:
+                            self.root.after(0, lambda n=nome_arquivo: callback_erro(n))
                 except Exception as e:
                     erros += 1
-                    log_buffer.append(f"❌ {nome_arquivo} - ERRO: {str(e)}")
-                
-                # OTIMIZAÇÃO: Atualizar interface em lotes
-                if len(log_buffer) >= buffer_size:
-                    self.atualizar_interface_lote(log_buffer, sucessos + erros, len(arquivos_xml))
-                    log_buffer.clear()
-        
-        # Processar logs restantes
-        if log_buffer:
-            self.atualizar_interface_lote(log_buffer, sucessos + erros, len(arquivos_xml))
+                    if callback_erro:
+                        self.root.after(0, lambda n=nome_arquivo, e=str(e): callback_erro(f"{n} - ERRO: {e}"))
         
         tempo_total = time.time() - inicio
         return sucessos, erros, tempo_total
-
-    def atualizar_interface_lote(self, logs, processados, total):
-        """NOVA FUNÇÃO: Atualiza interface em lotes para melhor performance"""
-        def atualizar():
-            # Adicionar todos os logs de uma vez
-            for log in logs:
-                self.adicionar_log(log)
-            
-            # Atualizar progresso
-            if hasattr(self, 'progresso_geral'):
-                self.progresso_geral.set(processados / total)
-                self.label_progresso.configure(text=f"{processados} / {total} arquivos processados")
-        
-        self.root.after(0, atualizar)
-
-    def processar_xml_individual_otimizado(self, arquivo_xml, pasta_saida):
-        """Versão OTIMIZADA sem logs excessivos"""
-        try:
-            # Verificações pré-processamento (fazer uma única vez)
-            if not hasattr(self, '_php_validado'):
-                self._validar_ambiente_php()
-            
-            # Usar PHP para gerar DANFE
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            php_full_path = os.path.join(script_dir, "php", "php.exe")
-            script_php_full = os.path.join(script_dir, "gerador_danfe.php")
-            
-            cmd = [php_full_path, script_php_full, arquivo_xml]
-            
-            # Executar PHP otimizado
-            php_dir = os.path.join(script_dir, "php")
-            resultado = subprocess.run(
-                cmd, 
-                capture_output=True, 
-                text=True, 
-                timeout=60,  # Reduzido de 120 para 60 segundos
-                creationflags=subprocess.CREATE_NO_WINDOW,
-                cwd=php_dir
-            )
-            
-            # Verificar resultado
-            if resultado.returncode == 0 and "SUCCESS:" in resultado.stdout:
-                arquivo_pdf = resultado.stdout.strip().replace("SUCCESS:", "")
-                
-                if os.path.exists(arquivo_pdf):
-                    # Mover PDF se necessário
-                    if pasta_saida != os.path.dirname(arquivo_xml):
-                        nome_pdf = os.path.basename(arquivo_pdf)
-                        novo_caminho = os.path.join(pasta_saida, nome_pdf)
-                        
-                        if os.path.exists(novo_caminho):
-                            os.remove(novo_caminho)
-                        
-                        os.rename(arquivo_pdf, novo_caminho)
-                    
-                    return True
-            
-            return False
-                
-        except subprocess.TimeoutExpired:
-            return False
-        except Exception:
-            return False
-
-    def _validar_ambiente_php(self):
-        """NOVA FUNÇÃO: Valida ambiente PHP uma única vez"""
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        php_full_path = os.path.join(script_dir, "php", "php.exe")
-        script_php_full = os.path.join(script_dir, "gerador_danfe.php")
-        
-        if not os.path.exists(php_full_path):
-            raise Exception(f"PHP não encontrado: {php_full_path}")
-        
-        if not os.path.exists(script_php_full):
-            raise Exception(f"Script PHP não encontrado: {script_php_full}")
-        
-        self._php_validado = True
 
     def mostrar_conclusao_processamento(self, sucessos, erros, tempo_total, pasta_saida):
         """Função auxiliar para mostrar conclusão (elimina duplicação)"""
@@ -1502,12 +991,10 @@ class DanfeAppMassa:
     # ============= FUNÇÕES ORIGINAIS (REFATORADAS) =============
 
     def carregar_log_inicial(self):
-        log_inicial = """⚕️ renamerPRO©
+        log_inicial = """⚕️ Hospital Israelita Albert Einstein - renamerPRO©
         
 🔹 Sistema inicializado com sucesso
 🔹 Aguardando configuração de pastas...
-🔹 NOVO: Dados de rastro incluídos automaticamente na DANFE
-🔹 Campos de rastro: nLote, qLote, dFab, dVal
 🔹 Você é responsável pelos seus atos
 
    1. Inicie o processamento em massa"""
@@ -1597,9 +1084,24 @@ class DanfeAppMassa:
         
         inicio = time.time()
         
-        # OTIMIZADO: Processar sem callbacks excessivos
+        # Processar com função auxiliar (elimina duplicação)
+        def callback_sucesso(nome):
+            nonlocal sucessos
+            sucessos += 1
+            self.adicionar_log(f"✅ {nome}")
+            self.progresso_geral.set(sucessos / total)
+            self.label_progresso.configure(text=f"{sucessos} / {total} arquivos processados")
+            
+        def callback_erro(nome):
+            nonlocal erros
+            erros += 1
+            self.adicionar_log(f"❌ {nome}")
+            processados = sucessos + erros
+            self.progresso_geral.set(processados / total)
+            self.label_progresso.configure(text=f"{processados} / {total} arquivos processados")
+            
         sucessos, erros, tempo_total = self.processar_xmls_paralelo(
-            self.arquivos_xml, pasta_saida
+            self.arquivos_xml, pasta_saida, callback_sucesso, callback_erro
         )
         
         self.root.after(0, lambda: self.adicionar_log(f"\n🎉 PROCESSAMENTO CONCLUÍDO!"))
@@ -1949,137 +1451,24 @@ class DanfeAppMassa:
             total_processado = len(chaves_validas)
             self.log_renomeacao.insert("end", f"\n📋 LOTE DE DADOS PROCESSADO:\n")
             self.log_renomeacao.insert("end", f"✅ {total_processado} registros adicionados\n")
-            self.log_renomeacao.insert("end", "🔍 Iniciando escaneamento automático...\n")
+            self.log_renomeacao.insert("end", "💡 Clique em 'ESCANEAR CHAVES' para validar\n")
             self.log_renomeacao.see("end")
             
             # Fechar janela
             self.janela_lote.destroy()
             
-            # Mudar para a aba de renomeação
-            self.tabview.set("📋 Renomeação Inteligente")
-            
-            # Executar escaneamento automático das chaves
-            self.executar_thread_segura(self.escanear_chaves_automatico)
+            messagebox.showinfo("Sucesso!", f"✅ {total_processado} registros adicionados com sucesso!\n\nAgora escaneie as chaves para validar.")
             
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao processar lote: {str(e)}")
 
-    def escanear_chaves_automatico(self):
-        """Função para escanear chaves automaticamente após processar lote"""
-        pasta = self.entrada_pasta_renomear.get()
-        
-        # Se não há pasta selecionada, solicitar seleção
-        if not pasta:
-            def solicitar_pasta():
-                messagebox.showinfo("Pasta Necessária", "Selecione a pasta com os arquivos XML para continuar o escaneamento.")
-                self.selecionar_pasta_renomear()
-                
-                # Verificar se pasta foi selecionada
-                pasta_selecionada = self.entrada_pasta_renomear.get()
-                if pasta_selecionada:
-                    # Executar escaneamento em thread
-                    self.executar_thread_segura(self.escanear_chaves_xml_completo)
-            
-            self.root.after(0, solicitar_pasta)
-            return
-        
-        # Executar escaneamento completo
-        self.escanear_chaves_xml_completo()
-
-    def escanear_chaves_xml_completo(self):
-        """Função completa de escaneamento com melhor feedback para XMLs e PDFs"""
-        pasta = self.entrada_pasta_renomear.get()
-        if not pasta:
-            def mostrar_erro():
-                messagebox.showerror("Erro", "Selecione a pasta com XMLs primeiro!")
-            
-            self.root.after(0, mostrar_erro)
-            return
-            
-        self.chaves_xml = {}
-        self.associacoes_pdf = {}
-        arquivos_processados = 0
-        pdfs_encontrados = 0
-        
-        # Log inicial
-        def log_inicial():
-            self.log_renomeacao.insert("end", "\n🔍 ESCANEANDO XMLs E PDFs...\n")
-            self.log_renomeacao.see("end")
-        
-        self.root.after(0, log_inicial)
-        
-        # Escanear arquivos XML e PDF
-        arquivos = self.escanear_arquivos_pasta(pasta)
-        
-        if not arquivos['xml']:
-            def mostrar_erro_xml():
-                self.log_renomeacao.insert("end", "❌ Nenhum arquivo XML encontrado na pasta!\n")
-                self.log_renomeacao.see("end")
-                messagebox.showerror("Erro", "Nenhum arquivo XML encontrado na pasta selecionada!")
-            
-            self.root.after(0, mostrar_erro_xml)
-            return
-        
-        try:
-            log_buffer = []
-            log_buffer.append(f"📁 Encontrados: {len(arquivos['xml'])} XMLs, {len(arquivos['pdf'])} PDFs\n\n")
-            
-            # Associar XMLs com PDFs
-            self.associacoes_pdf = self.associar_xml_pdf(pasta)
-            
-            for chave, dados in self.associacoes_pdf.items():
-                xml_path = dados['xml']
-                pdf_path = dados['pdf']
-                nome_xml = os.path.basename(xml_path)
-                
-                self.chaves_xml[chave] = xml_path
-                arquivos_processados += 1
-                
-                if pdf_path:
-                    nome_pdf = os.path.basename(pdf_path)
-                    log_buffer.append(f"✅ {nome_xml} + {nome_pdf}: {chave}\n")
-                    pdfs_encontrados += 1
-                else:
-                    log_buffer.append(f"⚠️ {nome_xml} (sem PDF): {chave}\n")
-            
-            # Log final
-            log_buffer.extend([
-                f"\n📊 ESCANEAMENTO CONCLUÍDO:\n",
-                f"✅ {arquivos_processados} chaves mapeadas\n",
-                f"📄 {pdfs_encontrados} PDFs associados aos XMLs\n",
-                f"🎯 Pronto para renomeação de XMLs e PDFs!\n"
-            ])
-            
-            # Atualizar interface
-            def atualizar_interface():
-                for log in log_buffer:
-                    self.log_renomeacao.insert("end", log)
-                self.log_renomeacao.see("end")
-                
-                # Mostrar mensagem de sucesso
-                if arquivos_processados > 0:
-                    pdf_msg = f"\n📄 {pdfs_encontrados} PDFs serão renomeados junto" if pdfs_encontrados > 0 else "\n⚠️ Nenhum PDF associado encontrado"
-                    messagebox.showinfo("Sucesso!", f"✅ Escaneamento concluído!\n\n🔑 {arquivos_processados} chaves encontradas{pdf_msg}\n\nAgora use 'VALIDAR E RENOMEAR' para processar tudo!")
-                else:
-                    messagebox.showwarning("Aviso", "Nenhuma chave de acesso foi encontrada nos arquivos XML!")
-            
-            self.root.after(0, atualizar_interface)
-            
-        except Exception as e:
-            def mostrar_erro_escaneamento():
-                error_msg = f"❌ Erro ao escanear: {str(e)}\n"
-                self.log_renomeacao.insert("end", error_msg)
-                self.log_renomeacao.see("end")
-                messagebox.showerror("Erro", f"Erro durante o escaneamento: {str(e)}")
-            
-            self.root.after(0, mostrar_erro_escaneamento)
 
     def executar(self):
         # Configurar controles de janela
         self.root.protocol("WM_DELETE_WINDOW", self.fechar_aplicacao)
         
         # Configurar título
-        self.root.title("⚕️ renamerPRO©")
+        self.root.title("⚕️ renamerPRO© - Hospital Israelita Albert Einstein")
         
         print("🖥️ Aplicação iniciada")
         
@@ -2103,3 +1492,121 @@ class DanfeAppMassa:
 if __name__ == "__main__":
     app = DanfeAppMassa()
     app.executar()
+
+
+"""
+===============================================================================
+📋 DOCUMENTAÇÃO - renamerPRO© SISTEMA DE PROCESSAMENTO DANFE
+Hospital Israelita Albert Einstein - renamerPRO©
+===============================================================================
+
+🚀 SISTEMA DE PROCESSAMENTO DANFE
+---------------------------------
+
+O renamerPRO© é um sistema profissional para processamento em massa de 
+documentos fiscais eletrônicos (DANFEs), desenvolvido especificamente para 
+ambientes hospitalares.
+
+📁 ARQUIVOS DO SISTEMA:
+-----------------------
+• danfe_app.py             - Aplicação principal com interface moderna
+• gerador_danfe.php        - Engine PHP para geração de DANFEs
+• requirements.txt         - Dependências Python
+• composer.json           - Dependências PHP
+
+🎯 FUNCIONALIDADES PRINCIPAIS:
+------------------------------
+
+1. 🚀 PROCESSAMENTO EM MASSA:
+   • Converte múltiplos XMLs para PDF simultaneamente
+   • Processamento paralelo (até 5 documentos simultâneos)
+   • Barras de progresso em tempo real
+   • Logs detalhados de cada operação
+
+2. 📋 RENOMEAÇÃO INTELIGENTE:
+   • Sistema avançado de mapeamento por chave de acesso
+   • Validação automática de chaves NFe (44 dígitos)
+   • Importação em lote de dados
+   • Interface responsiva com tabela profissional
+
+3. 🎨 INTERFACE MODERNA:
+   • Design profissional com tema Hospital Einstein
+   • Componentes CustomTkinter modernos
+   • Layout responsivo e adaptativo
+   • Paleta de cores médica suavizada
+
+4. 🛠️ RECURSOS AVANÇADOS:
+   • Threading para não bloquear interface
+   • Validação rigorosa de arquivos
+   • Processamento local seguro
+   • Logs auditáveis para compliance
+
+🔧 CONFIGURAÇÕES TÉCNICAS:
+-------------------------
+
+• Threads Paralelas: 5 workers simultâneos
+• Validação: Chaves NFe 44 dígitos obrigatórios
+• Formatos: XML → PDF via engine PHP
+• Interface: CustomTkinter com tema hospitalar
+• Arquitetura: MVC com separação de responsabilidades
+
+⚙️ CLASSES PRINCIPAIS:
+---------------------
+
+1. DanfeAppMassa:
+   • Classe principal da aplicação
+   • Gerencia interface e processamento
+   • Controla threading e validações
+
+2. Funcionalidades de Processamento:
+   • processar_xml_individual() - Processamento unitário
+   • processar_xmls_paralelo() - Processamento em massa
+   • validar_chave_nfe() - Validação de chaves
+
+3. Interface Profissional:
+   • criar_botao_profissional() - Botões com tema Einstein
+   • criar_card_profissional() - Cards organizados
+   • Sistema de cores médicas suavizadas
+
+🏥 BOAS PRÁTICAS:
+-----------------
+
+1. PERFORMANCE:
+   • Use processamento paralelo para grandes volumes
+   • Monitore uso de memória em lotes grandes
+   • Configure threads conforme hardware disponível
+
+2. SEGURANÇA:
+   • Validação rigorosa de arquivos de entrada
+   • Processamento local (sem envio externo)
+   • Logs detalhados para auditoria
+
+3. PRODUÇÃO:
+   • Teste em ambiente controlado
+   • Mantenha backups dos arquivos importantes
+   • Configure permissões adequadas
+
+💡 DICAS DE USO:
+----------------
+
+• Para grandes volumes: Use processamento em massa
+• Para organização: Use renomeação inteligente primeiro
+• Para eficiência: Configure pastas de saída organizadas
+• Para auditoria: Monitore logs de processamento
+
+🎉 BENEFÍCIOS DO SISTEMA:
+-------------------------
+
+✅ Interface moderna e profissional
+✅ Processamento rápido e eficiente
+✅ Validação automática de dados
+✅ Organização inteligente de arquivos
+✅ Logs detalhados para compliance
+✅ Tema hospitalar personalizado
+
+===============================================================================
+🏥 Hospital Israelita Albert Einstein - Departamento de TI
+📧 Sistema desenvolvido com as melhores práticas médicas e tecnológicas
+⚕️ "Excelência em Tecnologia da Informação Hospitalar"
+===============================================================================
+""" 

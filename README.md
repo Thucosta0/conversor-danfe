@@ -133,7 +133,6 @@ Este software é fornecido "como está", sem garantias expressas ou implícitas.
 
 *Este documento é propriedade intelectual da ThTweaks e contém informações confidenciais.*
 
-
 ## 🚀 Funcionalidades Principais
 
 ### 1. 📦 Processamento em Massa

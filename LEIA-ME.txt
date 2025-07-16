@@ -1,0 +1,49 @@
+===============================================
+  renamerPRO© - Hospital Israelita Albert Einstein
+  Sistema de Processamento e Renomeação de DANFEs
+===============================================
+
+🏥 SISTEMA EXCLUSIVO PARA HOSPITAL ALBERT EINSTEIN
+
+📋 SOBRE O SISTEMA:
+Este sistema foi desenvolvido especificamente para o Hospital Israelita 
+Albert Einstein para processamento e renomeação de documentos fiscais 
+(DANFEs).
+
+🚀 COMO USAR:
+
+1. PROCESSAMENTO EM MASSA (Aba "Processamento em Massa"):
+   - Selecione a pasta com arquivos XML
+   - Selecione a pasta de destino para os PDFs
+   - Clique em "PROCESSAR MASSA"
+   - Aguarde a conclusão
+
+2. RENOMEAÇÃO INTELIGENTE (Aba "Renomeação Inteligente"):
+   - Clique em "LOTE DE DADOS" para adicionar múltiplos registros
+   - Preencha as chaves de acesso e nomes desejados
+   - Selecione a pasta com XMLs e PDFs
+   - Clique em "🚀 EXECUTAR TUDO" para processar automaticamente
+
+🔧 REQUISITOS TÉCNICOS:
+- Windows 10 ou superior
+- Não requer instalações adicionais
+- Sistema portável (pode ser executado de qualquer pasta)
+
+⚠️ IMPORTANTE:
+- Faça backup dos arquivos antes de renomear
+- O sistema processa XMLs e PDFs simultaneamente
+- Chaves de acesso devem ter exatamente 44 dígitos
+
+🆘 SUPORTE:
+Para dúvidas ou problemas, entre em contato com:
+- Email: thucosta@thtweaks.com
+- Empresa: ThTweaks
+- Desenvolvedor: Thucosta
+
+📄 LICENÇA:
+© 2025 ThTweaks - Todos os direitos reservados
+Uso exclusivo autorizado para Hospital Israelita Albert Einstein
+
+===============================================
+renamerPRO© é marca registrada da ThTweaks
+=============================================== 
