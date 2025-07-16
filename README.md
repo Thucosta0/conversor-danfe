@@ -122,15 +122,6 @@ Este software é fornecido "como está", sem garantias expressas ou implícitas.
 
 ---
 
-## 📞 **Contato**
-
-**ThTweaks - Soluções Tecnológicas Corporativas**
-- **Desenvolvedor**: Thucosta
-- **Projeto**: renamerPRO© Hospital Einstein
-- **Status**: Produção Ativa
-
----
-
 *Este documento é propriedade intelectual da ThTweaks e contém informações confidenciais.*
 
 ## 🚀 Funcionalidades Principais
