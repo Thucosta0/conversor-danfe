@@ -1,6 +1,1 @@
-{
-    "require": {
-        "nfephp-org/sped-nfe": "^5.1",
-        "nfephp-org/sped-da": "^1.1"
-    }
-}
+# Conteúdo será lido do arquivo local
