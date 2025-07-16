@@ -1,14 +1,9 @@
-# 🏥 renamerPRO© - Hospital Israelita Albert Einstein
+# 🏥 renamerPRO©
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![License](https://img.shields.io/badge/license-Proprietary-red.svg)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)
 ![Status](https://img.shields.io/badge/status-Production-green.svg)
-
-**Sistema Profissional de Processamento e Conversão de Documentos Fiscais Eletrônicos (DANFEs)**
-
-Desenvolvido exclusivamente para o **Hospital Israelita Albert Einstein**, este sistema oferece processamento em massa, renomeação inteligente e conversão automática de arquivos XML para documentos DANFE em formato PDF, otimizando o fluxo de trabalho.
-
 ---
 
 ## 📋 **Índice**
@@ -109,7 +104,7 @@ O **renamerPRO©** é uma solução corporativa desenvolvida para atender às ne
 ---
 
 ### **Suporte Técnico**
-Para suporte técnico especializado, entre em contato com a equipe de desenvolvimento. (thucosta)
+Para suporte técnico, entre em contato com a equipe de desenvolvimento. (thucosta)
 
 ---
 
@@ -138,4 +133,81 @@ Este software é fornecido "como está", sem garantias expressas ou implícitas.
 
 *Este documento é propriedade intelectual da ThTweaks e contém informações confidenciais.*
 
-**Última atualização**: 2025 | **Versão do documento**: 1.0.0 
+
+## 🚀 Funcionalidades Principais
+
+### 1. 📦 Processamento em Massa
+- Conversão de múltiplos XMLs para PDF simultaneamente
+- Processamento paralelo (até 5 documentos simultâneos)
+- Barras de progresso em tempo real
+- Logs detalhados de cada operação
+
+### 2. 📋 Renomeação Inteligente
+- Sistema avançado de mapeamento por chave de acesso
+- Validação automática de chaves NFe (44 dígitos)
+- Importação em lote de dados
+- Interface responsiva com tabela profissional
+
+### 3. 🎨 Interface Moderna
+- Design profissional com tema Hospital Einstein
+- Componentes CustomTkinter modernos
+- Layout responsivo e adaptativo
+- Paleta de cores médica suavizada
+
+## 📁 Estrutura do Projeto
+
+```
+conversor-danfe/
+├── danfe_app.py          # Aplicação principal
+├── gerador_danfe.php     # Engine PHP com rastro
+├── teste_rastro.php      # Arquivo de teste de rastro
+├── build_exe.py          # Script de build
+├── requirements.txt      # Dependências Python
+├── composer.json         # Dependências PHP
+├── php/                  # Runtime PHP portável
+├── vendor/               # Bibliotecas PHP (NFePHP)
+└── README.md            # Esta documentação
+```
+### Benefícios:
+- Maior segurança no controle de medicamentos
+- Rastreabilidade completa do produto
+- Conformidade regulatória automática
+- Redução de erros manuais
+- Documentação auditável
+
+## 🛠️ Desenvolvimento
+
+### Arquitetura:
+- **Frontend**: CustomTkinter (Python)
+- **Backend**: Threading + XML Processing
+- **Engine PDF**: NFePHP + TCPDF
+- **Dados**: XML NFe + Processamento PHP
+
+### Customizações:
+- Tema hospitalar personalizado
+- Processamento paralelo otimizado
+- Validação rigorosa de chaves NFe
+- Logs detalhados para auditoria
+
+## 📊 Performance
+
+- **Processamento**: 5 XMLs simultâneos
+- **Velocidade**: ~2-3s por documento
+- **Memória**: 512MB máximo
+- **Formatos**: XML → PDF (A4 padrão Receita Federal)
+
+## 🔒 Segurança
+
+- Processamento 100% local (sem envio externo)
+- Validação rigorosa de arquivos XML
+- Logs auditáveis para compliance
+- Backup automático opcional
+
+## 📄 Licença
+
+© 2025 ThTweaks 
+Sistema desenvolvido internamente para uso Fiscal.
+
+---
+
+⚕️ **"Excelência em Tecnologia da Informação Hospitalar"** 

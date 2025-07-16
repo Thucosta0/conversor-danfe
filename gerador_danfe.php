@@ -31,11 +31,12 @@ ini_set('memory_limit', '512M');  // Aumentar limite de memória
 // Verifica se foi passado o arquivo XML como parâmetro
 if ($argc < 2) {
     echo "ERROR:Arquivo XML não especificado!\n";
-    echo "Uso: php gerador_danfe.php arquivo.xml\n";
+    echo "Uso: php gerador_danfe.php arquivo.xml [nome_personalizado]\n";
     exit(1);
 }
 
 $arquivoXML = $argv[1];
+$nomePersonalizado = isset($argv[2]) ? $argv[2] : null; // Nome personalizado opcional
 
 // Verifica se arquivo XML existe
 if (!file_exists($arquivoXML)) {
@@ -88,18 +89,14 @@ try {
         throw new Exception("Tag modelo não encontrada no XML");
     }
     
-    // Cria o gerador de DANFE
-    $danfe = new Danfe($xml);
+    // CUSTOMIZAÇÃO: Processar XML para incluir dados de rastro na descrição
+    $xml_customizado = adicionarDadosRastroNaDescricao($xml);
     
-    // Tentar personalizar textos da DANFE para materiais médicos
-    // Verificar se método existe antes de usar
-    if (method_exists($danfe, 'setTextoDescricaoProduto')) {
-        $danfe->setTextoDescricaoProduto('DESCRIÇÃO DO MATERIAL');
-    } elseif (method_exists($danfe, 'setDescricaoProduto')) {
-        $danfe->setDescricaoProduto('DESCRIÇÃO DO MATERIAL');
-    } elseif (method_exists($danfe, 'setLabelProduto')) {
-        $danfe->setLabelProduto('DESCRIÇÃO DO MATERIAL');
-    }
+    // Cria o gerador de DANFE com XML customizado
+    $danfe = new Danfe($xml_customizado);
+    
+    // Ativar concatenação automática de informações sobre rastro e medicamento
+    $danfe->descProdInfoLoteTxt = true;
     
     // Gera o PDF da DANFE (formato A4 retrato - padrão Receita Federal)
     $pdf = $danfe->render();
@@ -108,9 +105,16 @@ try {
         throw new Exception("PDF gerado está vazio");
     }
     
-    // Nome do arquivo PDF baseado no XML
-    $nomeBase = basename($arquivoXML, '.xml');
-    $nomePDF = dirname($arquivoXML) . '/' . $nomeBase . '_DANFE.pdf';
+    // Nome do arquivo PDF - LÓGICA CORRIGIDA SEM _DANFE
+    if ($nomePersonalizado) {
+        // Se nome personalizado foi fornecido, usar ele (sem extensão)
+        $nomeBase = basename($nomePersonalizado, '.pdf'); // Remove .pdf se fornecido
+        $nomePDF = dirname($arquivoXML) . '/' . $nomeBase . '.pdf';
+    } else {
+        // Comportamento padrão - apenas o nome do XML (SEM _DANFE)
+        $nomeBase = basename($arquivoXML, '.xml');
+        $nomePDF = dirname($arquivoXML) . '/' . $nomeBase . '.pdf';
+    }
     
     // Salva o PDF
     $bytesEscritos = file_put_contents($nomePDF, $pdf);
@@ -136,4 +140,112 @@ try {
     echo "ERROR:" . $e->getMessage() . "\n";
     exit(1);
 }
+
+/**
+ * Função para adicionar dados de rastro na descrição do produto
+ * Inclui: nLote, qLote, dFab, dVal dentro da descrição do produto
+ */
+function adicionarDadosRastroNaDescricao($xml) {
+    try {
+        $dom = new DOMDocument();
+        $dom->preserveWhiteSpace = false;
+        $dom->formatOutput = true;
+        
+        if (!$dom->loadXML($xml)) {
+            return $xml; // Retorna XML original se não conseguir processar
+        }
+        
+        $xpath = new DOMXPath($dom);
+        
+        // Registrar namespaces se necessário
+        $xpath->registerNamespace('nfe', 'http://www.portalfiscal.inf.br/nfe');
+        
+        // Buscar todos os produtos
+        $produtos = $xpath->query('//det/prod | //nfe:det/nfe:prod');
+        
+        foreach ($produtos as $prod) {
+            // Buscar elemento rastro
+            $rastros = $xpath->query('.//rastro | .//nfe:rastro', $prod);
+            
+            if ($rastros->length > 0) {
+                $rastroInfo = [];
+                
+                foreach ($rastros as $rastro) {
+                    $infoRastro = [];
+                    
+                    // Extrair dados de rastro
+                    $nLote = $xpath->query('.//nLote | .//nfe:nLote', $rastro);
+                    $qLote = $xpath->query('.//qLote | .//nfe:qLote', $rastro);
+                    $dFab = $xpath->query('.//dFab | .//nfe:dFab', $rastro);
+                    $dVal = $xpath->query('.//dVal | .//nfe:dVal', $rastro);
+                    
+                    if ($nLote->length > 0) {
+                        $infoRastro[] = "LOTE: " . trim($nLote->item(0)->nodeValue);
+                    }
+                    
+                    if ($qLote->length > 0) {
+                        $qtd = number_format(floatval($qLote->item(0)->nodeValue), 3, ',', '.');
+                        $infoRastro[] = "QTD LOTE: " . $qtd;
+                    }
+                    
+                    if ($dFab->length > 0) {
+                        $dataFab = formatarData($dFab->item(0)->nodeValue);
+                        $infoRastro[] = "FAB: " . $dataFab;
+                    }
+                    
+                    if ($dVal->length > 0) {
+                        $dataVal = formatarData($dVal->item(0)->nodeValue);
+                        $infoRastro[] = "VAL: " . $dataVal;
+                    }
+                    
+                    if (!empty($infoRastro)) {
+                        $rastroInfo[] = implode(' | ', $infoRastro);
+                    }
+                }
+                
+                // Adicionar informações de rastro à descrição do produto
+                if (!empty($rastroInfo)) {
+                    $xProd = $xpath->query('.//xProd | .//nfe:xProd', $prod);
+                    
+                    if ($xProd->length > 0) {
+                        $descricaoOriginal = trim($xProd->item(0)->nodeValue);
+                        
+                        // Criar box visual para os dados de rastro
+                        $dadosRastro = "\n" . str_repeat("-", 45) . "\n";
+                        $dadosRastro .= "📋 DADOS DE RASTRO:\n";
+                        $dadosRastro .= implode("\n", $rastroInfo) . "\n";
+                        $dadosRastro .= str_repeat("-", 45);
+                        
+                        $novaDescricao = $descricaoOriginal . $dadosRastro;
+                        $xProd->item(0)->nodeValue = $novaDescricao;
+                    }
+                }
+            }
+        }
+        
+        return $dom->saveXML();
+        
+    } catch (Exception $e) {
+        // Em caso de erro, retorna XML original
+        return $xml;
+    }
+}
+
+/**
+ * Formatar data do formato YYYY-MM-DD para DD/MM/YYYY
+ */
+function formatarData($data) {
+    try {
+        if (strlen($data) >= 10) {
+            $ano = substr($data, 0, 4);
+            $mes = substr($data, 5, 2);
+            $dia = substr($data, 8, 2);
+            return "$dia/$mes/$ano";
+        }
+        return $data;
+    } catch (Exception $e) {
+        return $data;
+    }
+}
+
 ?> 

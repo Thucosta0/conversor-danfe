@@ -125,8 +125,17 @@ def criar_manifest():
     manifest = {
         "name": "renamerPRO© Hospital Einstein",
         "version": "1.0.0",
-        "description": "Sistema de Processamento de DANFEs para Materiais Médicos",
+        "description": "Sistema de Processamento e Renomeação de DANFEs para Materiais Médicos",
         "hospital": "Hospital Israelita Albert Einstein",
+        "features": [
+            "Processamento em massa de XMLs para PDFs",
+            "Renomeação inteligente de XMLs e PDFs",
+            "Associação automática XML-PDF",
+            "Interface profissional CustomTkinter",
+            "Processamento paralelo otimizado",
+            "Documentação completa incluída (LEIA-ME.txt e README.md)",
+            "Script de inicialização automática incluso"
+        ],
         "components": {
             "python": "3.x",
             "php": "8.4.8",
